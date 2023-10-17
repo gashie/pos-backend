@@ -1,0 +1,46 @@
+{
+    "name": "pos",
+    "version": "1.0.0",
+    "description": "ecommerce",
+    "main": "server.js",
+    "scripts": {
+      "start": "NODE_ENV=production node server",
+      "pos": "nodemon server"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/gashie/pos-backend.git"
+    },
+    "keywords": [
+      "pos",
+      "ecommerce",
+      "backend",
+      "api"
+    ],
+    "author": "Gashie",
+    "license": "MIT",
+    "bugs": {
+      "url": "https://github.com/gashie/pos-backend/issues"
+    },
+    "homepage": "https://github.com/gashie/pos-backend#readme",
+    "dependencies": {
+      "@joi/date": "^2.1.0",
+      "axios": "^1.3.4",
+      "bcrypt": "^5.1.0",
+      "colors": "^1.4.0",
+      "cookie-parser": "^1.4.6",
+      "dotenv": "^16.0.3",
+      "express": "^4.18.2",
+      "express-fileupload": "^1.4.0",
+      "helmet": "^6.0.1",
+      "joi": "^17.8.3",
+      "jsonwebtoken": "^9.0.0",
+      "node-device-detector": "^2.0.12",
+      "pg": "^8.10.0",
+      "simple-encryptor": "^4.0.0",
+      "winston": "^3.8.2",
+      "winston-daily-rotate-file": "^4.7.1",
+      "xss-clean": "^0.1.1"
+    }
+  }
+  
