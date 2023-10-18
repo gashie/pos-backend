@@ -42,14 +42,14 @@ module.exports = {
         UserInfo.devcrb = device
         UserInfo.devirb = userIp
         let EncUserInfo = MainEnc(UserInfo)  //encrypt entire user information
-        const accessToken = jwt.sign({ EncUserInfo }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '6hrs' })
+        const accessToken = jwt.sign({ EncUserInfo }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15hrs' })
 
         // // Create secure cookie with refresh token 
         const options =  {
             httpOnly: true, //accessible only by web server 
             secure: false, //https
             // sameSite: 'None', //cross-site cookie 
-            maxAge: 1 * 6 * 60 * 60 * 1000 //cookie expiry: set to match rT
+            maxAge: 1 * 15 * 60 * 60 * 1000 //cookie expiry: set to match rT
         }
         logger.info('Logged in successfully')
         // res.status(code).json({
@@ -66,7 +66,7 @@ module.exports = {
     clearResponse: (req, res) => {
         const cookies = req.cookies
         if (!cookies?.tid) return res.sendStatus(204) //No content
-        res.clearCookie('tid', { httpOnly: true,  secure: false, expires: new Date(Date.now() + 10 * 1000), })
+        res.clearCookie('tid', { httpOnly: true,secure: false, expires: new Date(Date.now() + 10 * 1000), })
         logger.info('Logged out')
         res.json({ Message: 'Logged out' })
     },

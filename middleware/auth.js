@@ -35,7 +35,9 @@ exports.protect = asynHandler(async (req, res, next) => {
 
         let checkIp = decryptToken?.devirb
         let checkDevice = decryptToken?.devcrb
-        if (checkIp === userIp && checkDevice === device) {
+        if (checkIp === userIp) {
+
+        // if (checkIp === userIp && checkDevice === device) {
             req.user = decryptToken;
             return next()
         } else {
