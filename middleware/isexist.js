@@ -105,6 +105,27 @@ exports.supplierExist = asynHandler(async (req, res, next) => {
 
 
 });
+exports.brandExist = asynHandler(async (req, res, next) => {
+  let userData = req.user;
+  let tenant_id = userData?.tenant_id
+  let { brand_name } = req.body
+
+  const tableName = 'brands';
+  const columnsToSelect = ['brand_id']; // Use string values for column names
+  const conditions = [
+    { column: 'brand_name', operator: '=', value: brand_name },
+    { column: 'tenant_id', operator: '=', value: tenant_id },
+  ];
+  let results = await Finder(tableName, columnsToSelect, conditions)
+  let ObjectExist = results.rows[0]
+  if (ObjectExist) {
+    CatchHistory({ payload: JSON.stringify(req.body), api_response: `Sorry, brand with name ${brand_name} already exist`, function_name: 'brandExist', date_started: systemDate, sql_action: "SELECT", event: "add brand", actor: userData.id }, req)
+    return sendResponse(res, 0, 200, `Sorry, brand with name ${brand_name} already exist`)
+  }
+  return next()
+
+
+});
 
 //check if product exist for same tenant
 exports.productExist = asynHandler(async (req, res, next) => {
