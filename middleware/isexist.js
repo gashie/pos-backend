@@ -89,10 +89,15 @@ exports.supplierExist = asynHandler(async (req, res, next) => {
   let tenant_id = userData?.tenant_id
   let { supplier_name } = req.body
 
-  const find = await SupplieryModel.checkExist(supplier_name, tenant_id)
-  let ExistingInfo = find.rows[0]
-
-  if (ExistingInfo) {
+  const tableName = 'suppliers';
+  const columnsToSelect = ['supplier_name', 'tenant_id']; // Use string values for column names
+  const conditions = [
+    { column: 'supplier_name', operator: '=', value: supplier_name },
+    { column: 'tenant_id', operator: '=', value: tenant_id },
+  ];
+  let results = await Finder(tableName, columnsToSelect, conditions)
+  let ObjectExist = results.rows[0]
+  if (ObjectExist) {
     CatchHistory({ payload: JSON.stringify(req.body), api_response: `Sorry, supplier with name ${supplier_name} already exist`, function_name: 'supplierExist', date_started: systemDate, sql_action: "SELECT", event: "add supplier", actor: userData.id }, req)
     return sendResponse(res, 0, 200, `Sorry, supplier with name ${supplier_name} already exist`)
   }

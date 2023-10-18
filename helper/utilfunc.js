@@ -66,7 +66,7 @@ module.exports = {
     clearResponse: (req, res) => {
         const cookies = req.cookies
         if (!cookies?.jwt) return res.sendStatus(204) //No content
-        res.clearCookie('jwt', { httpOnly: true, sameSite: 'None', secure: true, expires: new Date(Date.now() + 10 * 1000), })
+        res.clearCookie('tid', { httpOnly: true, sameSite: 'None', secure: true, expires: new Date(Date.now() + 10 * 1000), })
         logger.info('Logged out')
         res.json({ Message: 'Logged out' })
     },

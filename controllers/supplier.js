@@ -9,7 +9,7 @@ exports.CreateSupplier = asynHandler(async (req, res, next) => {
     let tenant_id = userData?.tenant_id
     let payload = req.body;
     payload.tenant_id = tenant_id
-    let results = await GlobalModel.Create(payload, 'supplier','supplier_id');
+    let results = await GlobalModel.Create(payload, 'suppliers','supplier_id');
     if (results.rowCount == 1) {
         CatchHistory({ payload: JSON.stringify(payload), api_response: `New supplier added`, function_name: 'CreateSupplier', date_started: systemDate, sql_action: "INSERT", event: "Create Supplier", actor: userData.id }, req)
         return sendResponse(res, 1, 200, "Record saved", [])
@@ -23,7 +23,7 @@ exports.CreateSupplier = asynHandler(async (req, res, next) => {
 exports.ViewTenantSupplier = asynHandler(async (req, res, next) => {
     let userData = req.user;
     let tenant_id = userData?.tenant_id
-    let results = await GlobalModel.Find('tenant_id', tenant_id, 'supplier');
+    let results = await GlobalModel.Find('tenant_id', tenant_id, 'suppliers');
     if (results.rows.length == 0) {
         CatchHistory({ api_response: "No Record Found", function_name: 'ViewTenantSupplier', date_started: systemDate, sql_action: "SELECT", event: "Supplier View", actor: userData.id }, req)
         return sendResponse(res, 0, 200, "Sorry, No Record Found", [])
@@ -37,7 +37,7 @@ exports.UpdateSupplier = asynHandler(async (req, res, next) => {
     let userData = req.user;
     payload.updated_at = systemDate
 
-    const runupdate = await GlobalModel.Update(payload, 'supplier', 'supplier_id', payload.supplier_id)
+    const runupdate = await GlobalModel.Update(payload, 'suppliers', 'supplier_id', payload.supplier_id)
     if (runupdate.rowCount == 1) {
         CatchHistory({ payload: JSON.stringify(req.body), api_response: `User with id :${userData.id} updated supplier details}`, function_name: 'UpdateSupplier', date_started: systemDate, sql_action: "UPDATE", event: "Update Supplier", actor: userData.id }, req)
         return sendResponse(res, 1, 200, "Record Updated",runupdate.rows[0])

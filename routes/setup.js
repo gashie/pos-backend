@@ -3,7 +3,7 @@ const router = express.Router();
 const { userLogin } = require('../middleware/validator')
 const { protect } = require('../middleware/auth')
 
-const { accountExist, alreadyAssigned } = require('../middleware/isexist')
+const { accountExist, alreadyAssigned, supplierExist } = require('../middleware/isexist')
 const { tenantExist } = require('../middleware/tenant')
 
 
@@ -19,6 +19,8 @@ const {
 } = require("../controllers/auth");
 //SHOP CONTROLLER
 const { CreateShop, ViewTenantShops, UpdateShop, AssignToShop } = require("../controllers/shop");
+const { CreateSupplier, UpdateSupplier, ViewTenantSupplier } = require("../controllers/supplier");
+const { CreateBrand, ViewTenantBrand, UpdateBrand } = require("../controllers/brand");
 
 
 //routes
@@ -38,4 +40,13 @@ router.route("/assigntoshop").post(protect,alreadyAssigned,AssignToShop);
 router.route("/viewshops").post(protect, ViewTenantShops);
 router.route("/updateshop").post(protect, UpdateShop);
 
+//supplier
+router.route("/addsupplier").post(protect,supplierExist, CreateSupplier);
+router.route("/viewsupplier").post(protect, ViewTenantSupplier);
+router.route("/updatesupplier").post(protect, UpdateSupplier);
+
+//brands
+router.route("/addbrand").post(protect,supplierExist, CreateBrand);
+router.route("/viewbrands").post(protect, ViewTenantBrand);
+router.route("/updatebrand").post(protect, UpdateBrand);
 module.exports = router;
