@@ -68,7 +68,7 @@ module.exports = {
         if (!cookies?.tid) return res.sendStatus(204) //No content
         res.clearCookie('tid', { httpOnly: true,secure: false, expires: new Date(Date.now() + 10 * 1000), })
         logger.info('Logged out')
-        res.json({ Message: 'Logged out' })
+        return res.json({ Message: 'Logged out' })
     },
     sendInvite: async (UserInfo, status, code, res) => {
         let EncUserInfo = MainEnc(UserInfo)  //encrypt entire user information
