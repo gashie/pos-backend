@@ -23,6 +23,7 @@ const { CreateSupplier, UpdateSupplier, ViewTenantSupplier } = require("../contr
 const { CreateBrand, ViewTenantBrand, UpdateBrand } = require("../controllers/brand");
 const { CreateItemUnit, ViewItemUnit, UpdateItemUnit } = require("../controllers/units");
 const { CreateCategory, ViewTenantCategory, UpdateCategory } = require("../controllers/category");
+const { CreateCustomer, ViewTenantCustomers, UpdateCustomer } = require("../controllers/customer");
 
 
 //routes
@@ -62,4 +63,9 @@ router.route("/updateunit").post(protect, UpdateItemUnit);
 router.route("/addcategory").post(protect,catExist, CreateCategory);
 router.route("/viewcategory").post(protect, ViewTenantCategory);
 router.route("/updatecategory").post(protect, UpdateCategory);
+
+//customers
+router.route("/addcustomer").post(protect, CreateCustomer);
+router.route("/viewcustomer").post(protect, ViewTenantCustomers);
+router.route("/updatecustomer").post(protect, UpdateCustomer);
 module.exports = router;
