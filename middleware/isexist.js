@@ -66,22 +66,22 @@ exports.alreadyAssigned = asynHandler(async (req, res, next) => {
 });
 //check if category exist for same tenant
 
-exports.catExist = asynHandler(async (req, res, next) => {
-  let userData = req.user;
-  let tenant_id = userData?.tenant_id
-  let { cat_name } = req.body
+// exports.catExist = asynHandler(async (req, res, next) => {
+//   let userData = req.user;
+//   let tenant_id = userData?.tenant_id
+//   let { category_name } = req.body
 
-  const find = await CategoryModel.checkExist(cat_name, tenant_id)
-  let ExistingInfo = find.rows[0]
+//   const find = await CategoryModel.checkExist(category_name, tenant_id)
+//   let ExistingInfo = find.rows[0]
 
-  if (ExistingInfo) {
-    CatchHistory({ payload: JSON.stringify(req.body), api_response: `Sorry, category with name ${cat_name} already exist`, function_name: 'catExist', date_started: systemDate, sql_action: "SELECT", event: "add category", actor: userData.id }, req)
-    return sendResponse(res, 0, 200, `Sorry, category with name ${cat_name} already exist`)
-  }
-  return next()
+//   if (ExistingInfo) {
+//     CatchHistory({ payload: JSON.stringify(req.body), api_response: `Sorry, category with name ${category_name} already exist`, function_name: 'catExist', date_started: systemDate, sql_action: "SELECT", event: "add category", actor: userData.id }, req)
+//     return sendResponse(res, 0, 200, `Sorry, category with name ${category_name} already exist`)
+//   }
+//   return next()
 
 
-});
+// });
 
 //check if supplier exist for same tenant
 exports.supplierExist = asynHandler(async (req, res, next) => {
@@ -121,6 +121,27 @@ exports.brandExist = asynHandler(async (req, res, next) => {
   if (ObjectExist) {
     CatchHistory({ payload: JSON.stringify(req.body), api_response: `Sorry, brand with name ${brand_name} already exist`, function_name: 'brandExist', date_started: systemDate, sql_action: "SELECT", event: "add brand", actor: userData.id }, req)
     return sendResponse(res, 0, 200, `Sorry, brand with name ${brand_name} already exist`)
+  }
+  return next()
+
+
+});
+exports.catExist = asynHandler(async (req, res, next) => {
+  let userData = req.user;
+  let tenant_id = userData?.tenant_id
+  let { category_name } = req.body
+
+  const tableName = 'categories';
+  const columnsToSelect = ['category_name']; // Use string values for column names
+  const conditions = [
+    { column: 'category_name', operator: '=', value: category_name },
+    { column: 'tenant_id', operator: '=', value: tenant_id },
+  ];
+  let results = await Finder(tableName, columnsToSelect, conditions)
+  let ObjectExist = results.rows[0]
+  if (ObjectExist) {
+    CatchHistory({ payload: JSON.stringify(req.body), api_response: `Sorry, category with name ${category_name} already exist`, function_name: 'catExist', date_started: systemDate, sql_action: "SELECT", event: "add category", actor: userData.id }, req)
+    return sendResponse(res, 0, 200, `Sorry, category with name ${category_name} already exist`)
   }
   return next()
 

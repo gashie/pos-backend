@@ -3,9 +3,9 @@ const { logger } = require("../logs/winston");
 
 let shopdb = {};
 
-shopdb.checkExist = (cat_name,tenant_id) => {
+shopdb.checkExist = (category_name,tenant_id) => {
     return new Promise((resolve, reject) => {
-        pool.query("SELECT cat_name FROM category WHERE cat_name = $1 AND tenant_id = $2", [cat_name,tenant_id], (err, results) => {
+        pool.query("SELECT category_name FROM category WHERE category_name = $1 AND tenant_id = $2", [category_name,tenant_id], (err, results) => {
             if (err) {
                 logger.error(err);
                 return reject(err);

@@ -3,7 +3,7 @@ const router = express.Router();
 const { userLogin } = require('../middleware/validator')
 const { protect } = require('../middleware/auth')
 
-const { accountExist, alreadyAssigned, supplierExist, brandExist } = require('../middleware/isexist')
+const { accountExist, alreadyAssigned, supplierExist, brandExist, catExist } = require('../middleware/isexist')
 const { tenantExist } = require('../middleware/tenant')
 
 
@@ -22,6 +22,7 @@ const { CreateShop, ViewTenantShops, UpdateShop, AssignToShop } = require("../co
 const { CreateSupplier, UpdateSupplier, ViewTenantSupplier } = require("../controllers/supplier");
 const { CreateBrand, ViewTenantBrand, UpdateBrand } = require("../controllers/brand");
 const { CreateItemUnit, ViewItemUnit, UpdateItemUnit } = require("../controllers/units");
+const { CreateCategory, ViewTenantCategory, UpdateCategory } = require("../controllers/category");
 
 
 //routes
@@ -51,7 +52,14 @@ router.route("/addbrand").post(protect,brandExist, CreateBrand);
 router.route("/viewbrands").post(protect, ViewTenantBrand);
 router.route("/updatebrand").post(protect, UpdateBrand);
 
+//unit
+
 router.route("/addunit").post(protect,CreateItemUnit);
 router.route("/viewunit").post(protect, ViewItemUnit);
 router.route("/updateunit").post(protect, UpdateItemUnit);
+
+//category
+router.route("/addcategory").post(protect,catExist, CreateCategory);
+router.route("/viewcategory").post(protect, ViewTenantCategory);
+router.route("/updatecategory").post(protect, UpdateCategory);
 module.exports = router;

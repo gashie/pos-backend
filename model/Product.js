@@ -21,7 +21,7 @@ shopdb.ViewProduct = (tenant_id) => {
     return new Promise((resolve, reject) => {
         pool.query(`SELECT
            product.*,
-           category.cat_name,
+           category.category_name,
            supplier.supplier_name
 FROM
               product product

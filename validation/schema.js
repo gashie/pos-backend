@@ -24,7 +24,7 @@ const schema = {
             .label("Password"),
     }),
     Categoryschema: Joi.object({
-        cat_name: Joi.string().required().label("name"),
+        category_name: Joi.string().required().label("name"),
     }),
     Supplierschema: Joi.object({
         supplier_name: Joi.string().required().label("name"),
