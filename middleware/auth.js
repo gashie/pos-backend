@@ -17,8 +17,8 @@ exports.protect = asynHandler(async (req, res, next) => {
         req.headers.authorization.startsWith("Bearer")
     ) {
         token = req.headers.authorization.split(" ")[1];
-    } else if (req?.cookies?.jwt) {
-        token = req?.cookies?.jwt;
+    } else if (req?.cookies?.tid) {
+        token = req?.cookies?.tid;
     }
     //make sure token exists
     if (!token) {
@@ -37,7 +37,7 @@ exports.protect = asynHandler(async (req, res, next) => {
         let checkDevice = decryptToken?.devcrb
         if (checkIp === userIp) {
 
-        // if (checkIp === userIp && checkDevice === device) {
+            // if (checkIp === userIp && checkDevice === device) {
             req.user = decryptToken;
             return next()
         } else {

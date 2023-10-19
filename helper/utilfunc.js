@@ -82,4 +82,12 @@ module.exports = {
 
         })
     },
+    removeFile: async (dir, file) => {
+        const fs = require('fs').promises;
+        const path = require('path');
+        await fs.unlink(path.join(dir, file))
+        console.log('Deleted', file)
+        return
+
+    },
 };
