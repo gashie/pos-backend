@@ -222,29 +222,9 @@ exports.VerifyProductOptionValueId = asynHandler(async (req, res, next) => {
 exports.findExistingStock = asynHandler(async (req, res, next) => {
   let userData = req.user;
   let tenant_id = userData?.tenant_id
-  let { product_option_value_id, product_id } = req.body
-  let plenth = product_id.length
-  let pvalength = product_option_value_id.length
-  if (plenth > 0 && pvalength > 0) {
-    const findoptionval = await ProductOptionValueModel.FindbyId(product_option_value_id)
-    let ExistingOPtionValue = findoptionval.rows[0]
-    if (!ExistingOPtionValue) {
-      CatchHistory({ payload: JSON.stringify(req.body), api_response: `Sorry, product does not exist`, function_name: 'findProduct', date_started: systemDate, sql_action: "SELECT", event: "Update Product", actor: userData.id }, req)
-      return sendResponse(res, 0, 200, `Sorry, product option value does not exist`)
-    }
-    const product = await ProductModel.FindById(product_id, tenant_id)
-    let ExistingProduct = product.rows[0]
+  let { product_id } = req.body
 
-    if (!ExistingProduct) {
-      CatchHistory({ payload: JSON.stringify(req.body), api_response: `Sorry, product does not exist`, function_name: 'findProduct', date_started: systemDate, sql_action: "SELECT", event: "Update Product", actor: userData.id }, req)
-      return sendResponse(res, 0, 200, `Sorry, product does not exist`)
-    }
-    req.product = ExistingProduct;
-    req.productoptionval = ExistingOPtionValue;
-    return next()
-  }
-
-  if (plenth > 0 && pvalength === 0) {
+  if (product_id) {
     const product = await ProductModel.FindById(product_id, tenant_id)
     let ExistingProduct = product.rows[0]
 

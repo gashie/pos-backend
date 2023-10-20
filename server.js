@@ -51,7 +51,7 @@ app.use(function (req, res, next) {
 })
 
 var __dirname = path.resolve()
-app.use('/Upload', express.static(path.join(__dirname, '/Upload')))
+app.use('/upload', express.static(path.join(__dirname, '/upload')))
 // app.use('/Selfie', express.static(path.join(__dirname, '/Selfie')))
 
 //Mount routes
