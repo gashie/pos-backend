@@ -9,20 +9,18 @@ exports.ProdPicVerify = asynHandler(async (req, res, next) => {
     let pic = req?.files?.prod_pic;
  
     let userData = req.user;
-    var prodPicUploadLink = "./Upload/";
     let tenant_id = userData?.tenant_id
     let {serial,prod_name,net_image} = req.body
     let ProdPic = 'tenant';
-    var prodPicUploadLink = "./Upload/";
+    var prodPicUploadLink = "./upload/images/products/";
     //Set History Parameters
   
     //save Base64 to file
     fs = require('fs');
     //check files for
-    if (net_image.length > 0 ) {
-      return   next()
-    }
-    console.log(req.body);
+    // if (net_image.length > 0 ) {
+    //   return   next()
+    // }
     if (!pic) {
       return sendResponse(res, 0, 401, 'Please upload an image file for the product')
     }
@@ -60,11 +58,11 @@ exports.ProdPicVerify = asynHandler(async (req, res, next) => {
    if (pic) {
     console.log('im doing something here');
     let userData = req.user;
-    var prodPicUploadLink = "./Upload/";
     let tenant_id = userData?.tenant_id
     let {serial,prod_name} = req.body
     let ProdPic = 'tenant';
-    var prodPicUploadLink = "./Upload/";
+    var prodPicUploadLink = "./upload/images/products/";
+
     //Set History Parameters
   
     //save Base64 to file

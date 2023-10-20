@@ -3,7 +3,7 @@ const router = express.Router();
 const { userLogin } = require('../middleware/validator')
 const { protect } = require('../middleware/auth')
 
-const { accountExist, alreadyAssigned, supplierExist, brandExist, catExist } = require('../middleware/isexist')
+const { accountExist, alreadyAssigned, supplierExist, brandExist, catExist, productExist, findProduct } = require('../middleware/isexist')
 const { tenantExist } = require('../middleware/tenant')
 
 
@@ -24,6 +24,15 @@ const { CreateBrand, ViewTenantBrand, UpdateBrand } = require("../controllers/br
 const { CreateItemUnit, ViewItemUnit, UpdateItemUnit } = require("../controllers/units");
 const { CreateCategory, ViewTenantCategory, UpdateCategory } = require("../controllers/category");
 const { CreateCustomer, ViewTenantCustomers, UpdateCustomer } = require("../controllers/customer");
+//PRODUCT CONTROLLER
+const {
+   CreateProduct,
+   ViewTenantProduct,
+   UpdateProduct,
+   SearchTenantProduct,
+   FindTenantProduct
+   } = require("../controllers/product");
+const { ProdPicVerify, UpdateProdPicVerify } = require("../middleware/prodmiddleware");
 
 
 //routes
@@ -68,4 +77,11 @@ router.route("/updatecategory").post(protect, UpdateCategory);
 router.route("/addcustomer").post(protect, CreateCustomer);
 router.route("/viewcustomer").post(protect, ViewTenantCustomers);
 router.route("/updatecustomer").post(protect, UpdateCustomer);
+
+//product
+router.route("/addproduct").post(protect,productExist,ProdPicVerify, CreateProduct);
+router.route("/viewproduct").post(protect, ViewTenantProduct);
+router.route("/updateproduct").post(protect,findProduct,UpdateProdPicVerify, UpdateProduct);
+router.route("/searchproduct").post(protect, SearchTenantProduct);
+router.route("/findproduct").post(protect, FindTenantProduct);
 module.exports = router;

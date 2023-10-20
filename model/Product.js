@@ -22,11 +22,16 @@ shopdb.ViewProduct = (tenant_id) => {
         pool.query(`SELECT
            product.*,
            category.category_name,
-           supplier.supplier_name
+           supplier.supplier_name,
+           brand.brand_name,
+           item_unit.unit_type
+
 FROM
               product product
-              INNER JOIN category category ON product.cat_id  = category.cat_id
-              INNER JOIN supplier supplier ON product.supplier_id  = supplier.supplier_id
+              INNER JOIN categories category ON product.cat_id  = category.category_id
+              INNER JOIN suppliers supplier ON product.supplier_id  = supplier.supplier_id
+              INNER JOIN brands brand ON product.brand_id  = brand.brand_id
+              INNER JOIN item_unit item_unit ON product.unit_id  = item_unit.unit_id
               WHERE product.tenant_id = $1`, [tenant_id], (err, results) => {
             if (err) {
                 logger.error(err);
