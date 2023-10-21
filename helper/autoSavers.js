@@ -1,6 +1,5 @@
-const uuidV4 = require('uuid');
 const GlobalModel = require("../model/Global");
-const { sendResponse, CatchHistory } = require('./utilfunc');
+const { CatchHistory } = require('./utilfunc');
 const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 module.exports = {
     autoProcessQuantity: async (req,oldvalue,newvalue,action,product_id,user_id) => {
