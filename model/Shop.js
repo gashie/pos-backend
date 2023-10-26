@@ -17,7 +17,7 @@ shopdb.reSetMain = (percentage_fee,updated_at,id) => {
 };
 shopdb.FindDefaultShop = (user) => {
     return new Promise((resolve, reject) => {
-        pool.query("SELECT shop_id,role FROM shop_user_access WHERE user_id = $1 AND is_default = $2", [user,true], (err, results) => {
+        pool.query("SELECT outlet_id,role FROM shop_user_access WHERE user_id = $1 AND is_default = $2", [user,true], (err, results) => {
             if (err) {
                 logger.error(err);
                 return reject(err);

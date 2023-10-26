@@ -3,7 +3,7 @@ const router = express.Router();
 const { userLogin } = require('../middleware/validator')
 const { protect } = require('../middleware/auth')
 
-const { accountExist, alreadyAssigned, supplierExist, brandExist, catExist, productExist, findProduct, findExistingStock } = require('../middleware/isexist')
+const { accountExist, alreadyAssigned, supplierExist, brandExist, catExist, productExist, findProduct, findExistingStock, findExistingBeforeSell, findOutlet, findTransfer, findExistingBeforePickup, findTransferNotApproved } = require('../middleware/isexist')
 const { tenantExist } = require('../middleware/tenant')
 
 
@@ -34,6 +34,8 @@ const {
    } = require("../controllers/product");
 const { ProdPicVerify, UpdateProdPicVerify } = require("../middleware/prodmiddleware");
 const { CreateInventory, SearchInventory, ViewTenantInventory, UpdateInventory, ViewTenantInventoryHistory } = require("../controllers/inventory");
+const { CreateOrder, ViewGeneralOrderByDate } = require("../controllers/order");
+const { SendStockToOutlet, ViewStockTransfer, CancelTransfer, PickUpConsignment, ReceiveConsignment } = require("../controllers/outlet_stock_transfer");
 
 
 //routes
@@ -92,4 +94,16 @@ router.route("/searchinventory").post(protect, SearchInventory);
 router.route("/viewinventory").post(protect, ViewTenantInventory);
 router.route("/viewinventoryhistory").post(protect, ViewTenantInventoryHistory);
 router.route("/updateinventory").post(protect,findExistingStock, UpdateInventory);
+
+
+//transfer stocks  routes
+router.route("/initiatetransfer").post(protect,findOutlet,SendStockToOutlet);
+router.route("/viewtransfer").post(protect,ViewStockTransfer);
+router.route("/deletetransfer").post(protect,CancelTransfer);
+router.route("/pickupconsignment").post(protect,findTransfer,findExistingBeforePickup,PickUpConsignment);
+router.route("/receiveconsignment").post(protect,findTransferNotApproved,ReceiveConsignment);
+
+//order  routes
+router.route("/sell").post(protect,findExistingBeforeSell,CreateOrder);
+router.route("/sales").post(protect,ViewGeneralOrderByDate);
 module.exports = router;

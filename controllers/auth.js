@@ -52,7 +52,7 @@ exports.Auth = asynHandler(async (req, res) => {
         name: UserDbInfo.first_name + ' ' + UserDbInfo.last_name,
         email: UserDbInfo.email,
         role: UserDbInfo.role,
-        default_shop_id:findmyshop.rows[0].shop_id,
+        default_outlet_id:findmyshop.rows[0].outlet_id,
         default_role:findmyshop.rows[0].role,
         subscription_type:UserDbInfo.subscription_type,
 

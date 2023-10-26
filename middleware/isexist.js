@@ -44,13 +44,13 @@ exports.accountExist = asynHandler(async (req, res, next) => {
 });
 exports.alreadyAssigned = asynHandler(async (req, res, next) => {
   let userData = req.user;
-  let { shop_id, user_id, role } = req.body
+  let { outlet_id, user_id, role } = req.body
 
   const tableName = 'shop_user_access';
-  const columnsToSelect = ['user_id', 'shop_id', 'role']; // Use string values for column names
+  const columnsToSelect = ['user_id', 'outlet_id', 'role']; // Use string values for column names
   const conditions = [
     { column: 'user_id', operator: '=', value: user_id },
-    { column: 'shop_id', operator: '=', value: shop_id },
+    { column: 'outlet_id', operator: '=', value: outlet_id },
     { column: 'role', operator: '=', value: role },
   ];
   let results = await Finder(tableName, columnsToSelect, conditions)
@@ -60,6 +60,82 @@ exports.alreadyAssigned = asynHandler(async (req, res, next) => {
     CatchHistory({ payload: JSON.stringify(req.body), api_response: "Sorry, user has already been assigned to the same shop with same role", function_name: 'protect', date_started: systemDate, sql_action: "SELECT", event: "alreadyAssigned", actor: userData?.id }, req)
     return sendResponse(res, 0, 200, 'Sorry, user has already been assigned to the same shop with same role')
   }
+  return next()
+
+
+});
+exports.findOutlet = asynHandler(async (req, res, next) => {
+  let userData = req.user;
+  let tenant_id = userData?.tenant_id
+  let { destination_outlet_id } = req.body
+
+  const tableName = 'outlet';
+  const columnsToSelect = ['outlet_name']; // Use string values for column names
+  const conditions = [
+    { column: 'outlet_id', operator: '=', value: destination_outlet_id },
+    { column: 'tenant_id', operator: '=', value: tenant_id },
+
+  ];
+  let results = await Finder(tableName, columnsToSelect, conditions)
+  let ObjectExist = results.rows[0]
+
+  if (!ObjectExist) {
+    CatchHistory({ payload: JSON.stringify(req.body), api_response: "Sorry, this outlet does not exist", function_name: 'findOutlet', date_started: systemDate, sql_action: "SELECT", event: "find outlet if it exist", actor: userData?.id }, req)
+    return sendResponse(res, 0, 200, 'Sorry, this outlet does not exist')
+  }
+  req.outlet = ObjectExist;
+  return next()
+
+
+});
+exports.findTransfer = asynHandler(async (req, res, next) => {
+  let userData = req.user;
+  let tenant_id = userData?.tenant_id
+  let { transfer_id } = req.body
+
+  const tableName = 'transfer_stock';
+  const columnsToSelect = ['ref_code', 'reference', 'is_acknowledged', 'destination_outlet_id','transfer_from']; // Use string values for column names
+  const conditions = [
+    { column: 'transfer_id', operator: '=', value: transfer_id },
+    { column: 'tenant_id', operator: '=', value: tenant_id },
+
+  ];
+  let results = await Finder(tableName, columnsToSelect, conditions)
+  let ObjectExist = results.rows[0]
+
+  if (!ObjectExist) {
+    CatchHistory({ payload: JSON.stringify(req.body), api_response: "Sorry, this transfer request does not exist", function_name: 'findTransfer', date_started: systemDate, sql_action: "SELECT", event: "find transfer request if it exist", actor: userData?.id }, req)
+    return sendResponse(res, 0, 200, 'Sorry, this transfer request does not exist')
+  }
+  req.transfer = ObjectExist;
+  return next()
+
+
+});
+exports.findTransferNotApproved = asynHandler(async (req, res, next) => {
+  let userData = req.user;
+  let tenant_id = userData?.tenant_id
+  let { transfer_id } = req.body
+
+  const tableName = 'transfer_stock';
+  const columnsToSelect = ['ref_code', 'reference', 'is_acknowledged', 'destination_outlet_id','transfer_from']; // Use string values for column names
+  const conditions = [
+    { column: 'transfer_id', operator: '=', value: transfer_id },
+    { column: 'tenant_id', operator: '=', value: tenant_id },
+
+  ];
+  let results = await Finder(tableName, columnsToSelect, conditions)
+  let ObjectExist = results.rows[0]
+
+  if (!ObjectExist) {
+    CatchHistory({ payload: JSON.stringify(req.body), api_response: "Sorry, this transfer request does not exist", function_name: 'findTransfer', date_started: systemDate, sql_action: "SELECT", event: "find transfer request if it exist", actor: userData?.id }, req)
+    return sendResponse(res, 0, 200, 'Sorry, this transfer request does not exist')
+  }
+  if (ObjectExist?.is_acknowledged === true) {
+    CatchHistory({ payload: JSON.stringify(req.body), api_response: "Sorry, this transfer request has already been acknowledged", function_name: 'findTransfer', date_started: systemDate, sql_action: "SELECT", event: "find transfer request if it exist", actor: userData?.id }, req)
+    return sendResponse(res, 0, 200, 'Sorry, this transfer request has already been acknowledged')
+  }
+  req.transfer = ObjectExist;
   return next()
 
 
@@ -235,5 +311,118 @@ exports.findExistingStock = asynHandler(async (req, res, next) => {
     req.product = ExistingProduct;
     return next()
   }
+
+});
+exports.findExistingBeforeSell = asynHandler(async (req, res, next) => {
+  let userData = req.user;
+  let tenant_id = userData?.tenant_id
+  let { items } = req.body
+  let ExistingProduct = []
+
+
+
+  let errorMessages = '';
+
+  for (const iterator of items) {
+    const product = await ProductModel.FindOutletProductById(iterator.product_id, tenant_id);
+    let foundProduct = product.rows[0];
+    let price = iterator?.price_type === 'wholesale' ? foundProduct?.wholesale_price : foundProduct?.prod_price;
+    let prodQty = Number(foundProduct?.stock_quantity);
+  
+    if (product.rowCount == 0) {
+      errorMessages += 'Sorry, product does not exist. ';
+    } else if (prodQty < iterator?.qty) {
+      errorMessages += `Sorry, your stock is low on ${foundProduct?.prod_name}. `;
+    } else {
+      ExistingProduct.push(product.rows[0]);
+  
+      // Update the price in the item
+      iterator.price = price;
+    }
+  }
+  
+  if (errorMessages) {
+    // Handle errors and send the response if there are any error messages.
+    // For example, you can return a response with status code 400 for bad requests.
+    return sendResponse(res, 0, 400, errorMessages);
+  }
+  
+  // If there are no errors, update the request body and proceed.
+  req.body.items = items;
+  req.product = ExistingProduct;
+  return next();
+  
+
+});
+exports.findExistingBeforeTransfer = asynHandler(async (req, res, next) => {
+  let userData = req.user;
+  let tenant_id = userData?.tenant_id
+  let { items } = req.body
+  let ExistingProduct = []
+
+
+
+  items = await Promise.all(items.map(async (iterator) => {
+    const product = await ProductModel.FindById(iterator.product_id, tenant_id);
+    let foundProduct = product.rows[0];
+    let price = iterator?.price_type === 'wholesale' ? foundProduct?.wholesale_price : foundProduct?.prod_price;
+    let prodQty = Number(foundProduct?.prod_qty);
+
+    if (product.rowCount == 0) {
+      CatchHistory({ api_response: `Sorry, product does not exist`, function_name: 'findExistingBeforeSell', date_started: systemDate, sql_action: "SELECT", event: "Customer purchasing a product", actor: userData.id }, req);
+      return sendResponse(res, 0, 200, `Sorry, product does not exist`);
+    }
+
+    if (prodQty < iterator?.qty) {
+      return sendResponse(res, 0, 200, `Sorry, your stock is low on ${foundProduct?.prod_name}`);
+    }
+
+    ExistingProduct.push(product.rows[0]);
+
+    // Update the price in the item
+    return { ...iterator, price };
+  }));
+
+  req.body.items = items;
+  req.product = ExistingProduct;
+  return next()
+
+});
+exports.findExistingBeforePickup = asynHandler(async (req, res, next) => {
+  let userData = req.user;
+  let tenant_id = userData?.tenant_id
+  let trasferData = req.transfer
+  let { items } = req.body
+
+  if (trasferData?.transfer_from === "warehouse") {
+    //pick from warehouse
+
+    console.log('====================================');
+    console.log('picking from warehouse');
+    console.log('====================================');
+    for (const iterator of items) {
+      const product = await ProductModel.FindById(iterator.product_id, tenant_id);
+      let foundProduct = product.rows[0];
+      let prodQty = Number(foundProduct?.prod_qty);
+
+      if (product.rowCount == 0) {
+        CatchHistory({ api_response: `Sorry, product does not exist`, function_name: 'findExistingBeforeSell', date_started: systemDate, sql_action: "SELECT", event: "Customer purchasing a product", actor: userData.id }, req);
+        return sendResponse(res, 0, 200, `Sorry, product does not exist`);
+      }
+
+      if (prodQty < iterator?.qty) {
+        return sendResponse(res, 0, 200, `Sorry, your stock is low on ${foundProduct?.prod_name}`);
+      }
+    }
+
+    return next()
+  }
+  if (trasferData?.transfer_from === "outlet") {
+    //pick from outlet
+    console.log('====================================');
+    console.log('picking from outlet');
+    console.log('====================================');
+  }
+
 
 });

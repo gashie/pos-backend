@@ -74,7 +74,7 @@ CREATE TABLE IF NOT EXISTS public.order_items
 CREATE TABLE IF NOT EXISTS public.orders
 (
     order_id uuid NOT NULL DEFAULT gen_random_uuid(),
-    shop_id uuid NOT NULL,
+    outlet_id uuid NOT NULL,
     order_date timestamp without time zone NOT NULL,
     customer_id uuid NOT NULL,
     total_amount numeric(10, 2) NOT NULL,
@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS public.products
 CREATE TABLE IF NOT EXISTS public.shop_inventory
 (
     inventory_id uuid NOT NULL DEFAULT gen_random_uuid(),
-    shop_id uuid NOT NULL,
+    outlet_id uuid NOT NULL,
     product_id uuid NOT NULL,
     stock_quantity integer NOT NULL,
     min_stock_threshold integer NOT NULL,
@@ -133,7 +133,7 @@ CREATE TABLE IF NOT EXISTS public.shop_inventory
 CREATE TABLE IF NOT EXISTS public.shop_user_access
 (
     access_id uuid NOT NULL DEFAULT gen_random_uuid(),
-    shop_id uuid NOT NULL,
+    outlet_id uuid NOT NULL,
     user_id uuid NOT NULL,
     role character varying(20) COLLATE pg_catalog."default" NOT NULL,
     is_default boolean DEFAULT true,
@@ -143,7 +143,7 @@ CREATE TABLE IF NOT EXISTS public.shop_user_access
 
 CREATE TABLE IF NOT EXISTS public.shops
 (
-    shop_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    outlet_id uuid NOT NULL DEFAULT gen_random_uuid(),
     shop_name character varying(255) COLLATE pg_catalog."default" NOT NULL,
     tenant_id uuid NOT NULL,
     is_main_shop boolean NOT NULL,
@@ -159,7 +159,7 @@ CREATE TABLE IF NOT EXISTS public.shops
     opening_hours character varying(255) COLLATE pg_catalog."default",
     website_url character varying(255) COLLATE pg_catalog."default",
     created_at timestamp without time zone DEFAULT now(),
-    CONSTRAINT shops_pkey PRIMARY KEY (shop_id)
+    CONSTRAINT shops_pkey PRIMARY KEY (outlet_id)
 );
 
 CREATE TABLE IF NOT EXISTS public.suppliers
@@ -247,8 +247,8 @@ ALTER TABLE IF EXISTS public.orders
 
 
 ALTER TABLE IF EXISTS public.orders
-    ADD CONSTRAINT orders_shop_id_fkey FOREIGN KEY (shop_id)
-    REFERENCES public.shops (shop_id) MATCH SIMPLE
+    ADD CONSTRAINT orders_outlet_id_fkey FOREIGN KEY (outlet_id)
+    REFERENCES public.shops (outlet_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION;
 
@@ -268,15 +268,15 @@ ALTER TABLE IF EXISTS public.shop_inventory
 
 
 ALTER TABLE IF EXISTS public.shop_inventory
-    ADD CONSTRAINT shop_inventory_shop_id_fkey FOREIGN KEY (shop_id)
-    REFERENCES public.shops (shop_id) MATCH SIMPLE
+    ADD CONSTRAINT shop_inventory_outlet_id_fkey FOREIGN KEY (outlet_id)
+    REFERENCES public.shops (outlet_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION;
 
 
 ALTER TABLE IF EXISTS public.shop_user_access
-    ADD CONSTRAINT shop_user_access_shop_id_fkey FOREIGN KEY (shop_id)
-    REFERENCES public.shops (shop_id) MATCH SIMPLE
+    ADD CONSTRAINT shop_user_access_outlet_id_fkey FOREIGN KEY (outlet_id)
+    REFERENCES public.shops (outlet_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION;
 

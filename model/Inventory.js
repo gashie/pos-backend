@@ -47,4 +47,5 @@ shopdb.FetchInventoryHistory = (tenant_id) => {
 
 
 
+
 module.exports = shopdb

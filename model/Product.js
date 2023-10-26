@@ -3,9 +3,9 @@ const { logger } = require("../logs/winston");
 
 let shopdb = {};
 
-shopdb.checkExist = (field,value,tenant_id) => {
+shopdb.checkExist = (field, value, tenant_id) => {
     return new Promise((resolve, reject) => {
-        pool.query(`SELECT product_id FROM product WHERE ${field} = $1 AND tenant_id = $2`, [value,tenant_id], (err, results) => {
+        pool.query(`SELECT product_id FROM product WHERE ${field} = $1 AND tenant_id = $2`, [value, tenant_id], (err, results) => {
             if (err) {
                 logger.error(err);
                 return reject(err);
@@ -43,9 +43,9 @@ FROM
     });
 };
 
-shopdb.FindBySerial = (serial,tenant_id) => {
+shopdb.FindBySerial = (serial, tenant_id) => {
     return new Promise((resolve, reject) => {
-        pool.query(`SELECT * FROM product WHERE serial = $1 AND tenant_id = $2`, [serial,tenant_id], (err, results) => {
+        pool.query(`SELECT * FROM product WHERE serial = $1 AND tenant_id = $2`, [serial, tenant_id], (err, results) => {
             if (err) {
                 logger.error(err);
                 return reject(err);
@@ -55,9 +55,40 @@ shopdb.FindBySerial = (serial,tenant_id) => {
         });
     });
 };
-shopdb.FindById = (product_id,tenant_id) => {
+shopdb.FindById = (product_id, tenant_id) => {
     return new Promise((resolve, reject) => {
-        pool.query(`SELECT * FROM product WHERE product_id = $1 AND tenant_id = $2`, [product_id,tenant_id], (err, results) => {
+        pool.query(`SELECT * FROM product WHERE product_id = $1 AND tenant_id = $2`, [product_id, tenant_id], (err, results) => {
+            if (err) {
+                logger.error(err);
+                return reject(err);
+            }
+
+            return resolve(results);
+        });
+    });
+};
+shopdb.FindOutletProductById = (product_id, tenant_id) => {
+    return new Promise((resolve, reject) => {
+        pool.query(`
+        SELECT 
+        p.*,
+        oi.stock_quantity
+FROM product p
+INNER JOIN outlet_inventory oi ON p.product_id = oi.product_id
+WHERE p.product_id = $1 AND p.tenant_id = $2;
+        `, [product_id, tenant_id], (err, results) => {
+            if (err) {
+                logger.error(err);
+                return reject(err);
+            }
+
+            return resolve(results);
+        });
+    });
+};
+shopdb.ProductTakeOut = (qty, product_id) => {
+    return new Promise((resolve, reject) => {
+        pool.query(`UPDATE product SET prod_qty = prod_qty - $1 WHERE product_id = $2`, [qty, product_id], (err, results) => {
             if (err) {
                 logger.error(err);
                 return reject(err);
