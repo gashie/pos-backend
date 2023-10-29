@@ -30,12 +30,13 @@ const {
    ViewTenantProduct,
    UpdateProduct,
    SearchTenantProduct,
-   FindTenantProduct
+   FindTenantProduct,
+   ViewTenantOutletProduct
    } = require("../controllers/product");
 const { ProdPicVerify, UpdateProdPicVerify } = require("../middleware/prodmiddleware");
 const { CreateInventory, SearchInventory, ViewTenantInventory, UpdateInventory, ViewTenantInventoryHistory } = require("../controllers/inventory");
 const { CreateOrder, ViewGeneralOrderByDate } = require("../controllers/order");
-const { SendStockToOutlet, ViewStockTransfer, CancelTransfer, PickUpConsignment, ReceiveConsignment } = require("../controllers/outlet_stock_transfer");
+const { SendStockToOutlet, ViewStockTransfer, CancelTransfer, PickUpConsignment, ReceiveConsignment, ViewStocksForTransfer, ViewStocksPickedForTransfer } = require("../controllers/outlet_stock_transfer");
 
 
 //routes
@@ -84,6 +85,7 @@ router.route("/updatecustomer").post(protect, UpdateCustomer);
 //product
 router.route("/addproduct").post(protect,productExist,ProdPicVerify, CreateProduct);
 router.route("/viewproduct").post(protect, ViewTenantProduct);
+router.route("/viewoutletproduct").post(protect, ViewTenantOutletProduct);
 router.route("/updateproduct").post(protect,findProduct,UpdateProdPicVerify, UpdateProduct);
 router.route("/searchproduct").post(protect, SearchTenantProduct);
 router.route("/findproduct").post(protect, FindTenantProduct);
@@ -99,9 +101,11 @@ router.route("/updateinventory").post(protect,findExistingStock, UpdateInventory
 //transfer stocks  routes
 router.route("/initiatetransfer").post(protect,findOutlet,SendStockToOutlet);
 router.route("/viewtransfer").post(protect,ViewStockTransfer);
+router.route("/viewtconsignmentitems").post(protect,ViewStocksPickedForTransfer);
 router.route("/deletetransfer").post(protect,CancelTransfer);
 router.route("/pickupconsignment").post(protect,findTransfer,findExistingBeforePickup,PickUpConsignment);
 router.route("/receiveconsignment").post(protect,findTransferNotApproved,ReceiveConsignment);
+router.route("/viewstockfortransfer").post(protect,findTransfer,ViewStocksForTransfer);
 
 //order  routes
 router.route("/sell").post(protect,findExistingBeforeSell,CreateOrder);

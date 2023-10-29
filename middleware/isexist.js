@@ -67,7 +67,7 @@ exports.alreadyAssigned = asynHandler(async (req, res, next) => {
 exports.findOutlet = asynHandler(async (req, res, next) => {
   let userData = req.user;
   let tenant_id = userData?.tenant_id
-  let { destination_outlet_id } = req.body
+  let { destination_outlet_id,source_outlet_id,transfer_from } = req.body
 
   const tableName = 'outlet';
   const columnsToSelect = ['outlet_name']; // Use string values for column names
@@ -76,15 +76,43 @@ exports.findOutlet = asynHandler(async (req, res, next) => {
     { column: 'tenant_id', operator: '=', value: tenant_id },
 
   ];
-  let results = await Finder(tableName, columnsToSelect, conditions)
-  let ObjectExist = results.rows[0]
+  const conditions2 = [
+    { column: 'outlet_id', operator: '=', value: source_outlet_id },
+    { column: 'tenant_id', operator: '=', value: tenant_id },
 
-  if (!ObjectExist) {
-    CatchHistory({ payload: JSON.stringify(req.body), api_response: "Sorry, this outlet does not exist", function_name: 'findOutlet', date_started: systemDate, sql_action: "SELECT", event: "find outlet if it exist", actor: userData?.id }, req)
-    return sendResponse(res, 0, 200, 'Sorry, this outlet does not exist')
+  ];
+  if (transfer_from === 'warehouse') {
+    let results = await Finder(tableName, columnsToSelect, conditions)
+    let ObjectExist = results.rows[0]
+  
+    if (!ObjectExist) {
+      CatchHistory({ payload: JSON.stringify(req.body), api_response: "Sorry, this outlet does not exist", function_name: 'findOutlet', date_started: systemDate, sql_action: "SELECT", event: "find outlet if it exist", actor: userData?.id }, req)
+      return sendResponse(res, 0, 200, 'Sorry, this outlet does not exist')
+    }
+    req.outlet = ObjectExist;
+    return next()
   }
-  req.outlet = ObjectExist;
-  return next()
+
+  if (destination_outlet_id === source_outlet_id) {
+    CatchHistory({ payload: JSON.stringify(req.body), api_response: "Sorry, source and destination cannot be the same", function_name: 'findOutlet', date_started: systemDate, sql_action: "SELECT", event: "found source and destination to be the same", actor: userData?.id }, req)
+    return sendResponse(res, 0, 200, 'Sorry, source and destination cannot be the same')
+  }
+
+  if (transfer_from === 'outlet') {
+    let results = await Finder(tableName, columnsToSelect, conditions)
+    let ObjectExist = results.rows[0]
+  
+    let results2 = await Finder(tableName, columnsToSelect, conditions2)
+    let ObjectExist2 = results2.rows[0]
+  
+    if (!ObjectExist && !ObjectExist2) {
+      CatchHistory({ payload: JSON.stringify(req.body), api_response: "Sorry, this outlet does not exist", function_name: 'findOutlet', date_started: systemDate, sql_action: "SELECT", event: "find outlet if it exist", actor: userData?.id }, req)
+      return sendResponse(res, 0, 200, 'Sorry, this outlet does not exist')
+    }
+    req.outlet = ObjectExist;
+    req.source_outlet = ObjectExist2;
+    return next()
+  }
 
 
 });
@@ -94,7 +122,7 @@ exports.findTransfer = asynHandler(async (req, res, next) => {
   let { transfer_id } = req.body
 
   const tableName = 'transfer_stock';
-  const columnsToSelect = ['ref_code', 'reference', 'is_acknowledged', 'destination_outlet_id','transfer_from']; // Use string values for column names
+  const columnsToSelect = ['ref_code', 'reference', 'is_acknowledged', 'destination_outlet_id','transfer_from','source_outlet_id']; // Use string values for column names
   const conditions = [
     { column: 'transfer_id', operator: '=', value: transfer_id },
     { column: 'tenant_id', operator: '=', value: tenant_id },
@@ -118,7 +146,7 @@ exports.findTransferNotApproved = asynHandler(async (req, res, next) => {
   let { transfer_id } = req.body
 
   const tableName = 'transfer_stock';
-  const columnsToSelect = ['ref_code', 'reference', 'is_acknowledged', 'destination_outlet_id','transfer_from']; // Use string values for column names
+  const columnsToSelect = ['ref_code', 'reference', 'is_acknowledged', 'destination_outlet_id','transfer_from','source_outlet_id']; // Use string values for column names
   const conditions = [
     { column: 'transfer_id', operator: '=', value: transfer_id },
     { column: 'tenant_id', operator: '=', value: tenant_id },
@@ -422,6 +450,27 @@ exports.findExistingBeforePickup = asynHandler(async (req, res, next) => {
     console.log('====================================');
     console.log('picking from outlet');
     console.log('====================================');
+
+    for (const iterator of items) {
+      const product = await ProductModel.FindOutletProductById(iterator.product_id, tenant_id,trasferData?.source_outlet_id);
+      let foundProduct = product.rows[0];
+      let prodQty = Number(foundProduct?.stock_quantity);
+
+      if (product.rowCount == 0) {
+        CatchHistory({ api_response: `Sorry, product does not exist`, function_name: 'findExistingBeforeSell', date_started: systemDate, sql_action: "SELECT", event: "Customer purchasing a product", actor: userData.id }, req);
+        return sendResponse(res, 0, 200, `Sorry, product does not exist`);
+      }
+
+      console.log('====================================');
+      console.log(prodQty);
+      console.log('====================================');
+      if (prodQty < iterator?.qty) {
+        return sendResponse(res, 0, 200, `Sorry, your stock is low on ${foundProduct?.prod_name}`);
+      }
+    }
+
+    return next()
+  
   }
 
 

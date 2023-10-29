@@ -4,25 +4,29 @@ const GlobalModel = require("../model/Global")
 const ProductOptionValueModel = require("../model/ProductOptionValue");
 const InventoryModel = require("../model/Inventory");
 
-const { autoProcessQuantity, autoProcessOptionValueQuantity, autoProcessOutletQuantity, autoDbProcessQuantity } = require("../helper/autoSavers");
-const { FetchTransferData, deleteTransfer, TransferTakeOut } = require("../model/Transfer");
+const { autoProcessQuantity, autoProcessOptionValueQuantity, autoProcessOutletQuantity, autoDbProcessQuantity, processOutletQuantity } = require("../helper/autoSavers");
+const { FetchTransferData, deleteTransfer, TransferTakeOut, FindTransferData } = require("../model/Transfer");
+const { FindOutletProductByOutletId, FindItemsToPick } = require("../model/Product");
 
 const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 
 exports.SendStockToOutlet = asynHandler(async (req, res, next) => {
     //check if option value  exist for tenant
     let userData = req.user;
-    let transfer_from = req.body.transfer_from
-    let setDestination = transfer_from === 'warehouse' ? 'WAREHOUSE' : destinationOutlet?.outlet_name.toUpperCase()
     let destinationOutlet = req.outlet
-    let tenant_id = userData?.tenant_id
+    let sourceOutlet = req.source_outlet
+    let transfer_from = req.body.transfer_from
     let payload = req.body;
+    // transfer_from is warehouse set source to loggedin outlet name else if source is set, set source to source name
+    let setSource = transfer_from === 'warehouse' ? 'WAREHOUSE' : sourceOutlet?.outlet_name.toUpperCase()
+    // let setSourceUid = transfer_from === 'warehouse' ? userData?.default_outlet_id : payload?.source_outlet_id
+    let tenant_id = userData?.tenant_id
     payload.tenant_id = tenant_id
-    let refresult = await GlobalModel.FetchRefCode(userData?.company.toUpperCase(), setDestination);
+    let refresult = await GlobalModel.FetchRefCode(setSource, destinationOutlet?.outlet_name.toUpperCase());
     let refcode = refresult.rows[0].generate_ref_code
     payload.ref_code = refcode
     payload.processed_by = userData.id
-    payload.source_outlet_id = userData?.default_outlet_id
+    payload.source_outlet_id = transfer_from === 'warehouse' ? userData?.default_outlet_id : payload?.source_outlet_id
     let results = await GlobalModel.Create(payload, 'transfer_stock', '');
     if (results.rowCount == 1) {
         CatchHistory({ payload: JSON.stringify(payload), api_response: `New transfer initiated`, function_name: 'SendStockToOutlet', date_started: systemDate, sql_action: "INSERT", event: "Create Inventory", actor: userData.id }, req)
@@ -48,6 +52,36 @@ exports.ViewStockTransfer = asynHandler(async (req, res) => {
         return sendResponse(res, 0, 200, "Sorry, No Record Found", [])
     }
     sendResponse(res, 1, 200, "Record Found", results.rows)
+})
+exports.ViewStocksForTransfer = asynHandler(async (req, res) => {
+    let userData = req.user;
+    let {transfer_id} = req.body
+    let tenant_id = userData?.tenant_id
+    let trasferData = req.transfer
+    let results = await FindTransferData(transfer_id, tenant_id);
+    let source_outlet_product = await FindOutletProductByOutletId(trasferData?.source_outlet_id,tenant_id);
+
+    if (results.rows.length == 0) {
+        CatchHistory({ api_response: "No Record Found", function_name: 'ViewStockTransfer', date_started: systemDate, sql_action: "SELECT", event: `View stock transfer from ${start} - ${end}`, actor: userData?.id }, req)
+        return sendResponse(res, 0, 200, "Sorry, No Record Found", [])
+    }
+    sendResponse(res, 1, 200, "Record Found", {transfer_info:results.rows,product_count:source_outlet_product.rows.length,product_from_source:source_outlet_product.rows})
+   
+})
+exports.ViewStocksPickedForTransfer = asynHandler(async (req, res) => {
+    let userData = req.user;
+    let {transfer_id} = req.body
+    let tenant_id = userData?.tenant_id
+    let trasferData = req.transfer
+    let results = await FindTransferData(transfer_id, tenant_id);
+    let pickupitems = await FindItemsToPick(transfer_id);
+
+    if (results.rows.length == 0) {
+        CatchHistory({ api_response: "No Record Found", function_name: 'ViewStocksPickedForTransfer', date_started: systemDate, sql_action: "SELECT", event: `View items to pick up transfer`, actor: userData?.id }, req)
+        return sendResponse(res, 0, 200, "Sorry, No Record Found", [])
+    }
+    sendResponse(res, 1, 200, "Record Found", {transfer_info:results.rows,items_count:pickupitems.rows.length,product_to_pickup:pickupitems.rows})
+   
 })
 exports.CancelTransfer = asynHandler(async (req, res, next) => {
     let { transfer_id } = req.body;
@@ -154,30 +188,49 @@ exports.ReceiveConsignment = asynHandler(async (req, res, next) => {
             }
 
             if (trasferData?.transfer_from === "warehouse") { //deduct quantity from warehouse
+                console.log('====================================');
+                console.log(`processing warehouse transfer from source :warehouse to ${item.outlet_id}`);
+                console.log('====================================');
                 autoDbProcessQuantity(req, item.quantity, item.product_id, userData.id);
 
                 const tableName2 = 'outlet_inventory';
-                const columnsToSelect2 = ['product_id']; // Use string values for column names
+                const columnsToSelect2 = ['product_id']; // find product from outlet if it exist
                 const conditions2 = [
                     { column: 'product_id', operator: '=', value: item?.product_id },
+                    { column: 'outlet_id', operator: '=', value: item?.outlet_id },
                 ]
                 let product = await GlobalModel.Finder(tableName2, columnsToSelect2, conditions2)
                 let foundProduct = product.rows[0];
                 if (foundProduct) {  //if found update quantity
-                    await TransferTakeOut(item.quantity, item.product_id)
+                    await TransferTakeOut(item.quantity, item.product_id,item.outlet_id)
                 } else {
                     await GlobalModel.Create(payload, 'outlet_inventory', '');
                 }
             }
-            if (trasferData?.transfer_from === "outlet") { //deduct quantity from warehouse
-                autoProcessOutletQuantity(req, existingProduct.prod_qty, item.qty, 'sub', item.product_id, userData.id);
+            if (trasferData?.transfer_from === "outlet") { //deduct quantity from outlet
                 console.log('====================================');
-                console.log(existingProduct.prod_qty, item.qty, 'sub', item.product_id, userData.id);
+                console.log(`processing outlet transfer from source :${trasferData.source_outlet_id} to ${item.outlet_id} with quantity ${item.quantity}`);
                 console.log('====================================');
+                processOutletQuantity(req, item.quantity, item.product_id, userData.id, trasferData.source_outlet_id);
+                const tableName2 = 'outlet_inventory';
+                const columnsToSelect2 = ['product_id']; // find product from outlet if it exist
+                const conditions2 = [
+                    { column: 'product_id', operator: '=', value: item?.product_id },
+                    { column: 'outlet_id', operator: '=', value: item?.outlet_id },
+                ]
+                let product = await GlobalModel.Finder(tableName2, columnsToSelect2, conditions2)
+                let foundProduct = product.rows[0];
+                if (foundProduct) {  //if found update quantity
+                    await TransferTakeOut(item.quantity, item.product_id,item.outlet_id)
+                } else {
+                    await GlobalModel.Create(payload, 'outlet_inventory', '');
+                }
+               
+
             }
 
             if (!--itemCount) {
-                isDone = true;
+               isDone = true;
                 console.log(" => This is the last iteration...");
 
             } else {

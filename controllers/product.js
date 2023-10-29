@@ -42,6 +42,19 @@ exports.ViewTenantProduct = asynHandler(async (req, res, next) => {
 
     sendResponse(res, 1, 200, "Record Found", results.rows)
 })
+exports.ViewTenantOutletProduct = asynHandler(async (req, res, next) => {
+    let userData = req.user;
+    let tenant_id = userData?.tenant_id
+    let default_outlet_id = userData?.default_outlet_id
+    let results = await ProductModel.FindOutletProductByOutletId(default_outlet_id,tenant_id);
+    if (results.rows.length == 0) {
+        CatchHistory({ api_response: "No Record Found", function_name: 'ViewTenantOutletProduct', date_started: systemDate, sql_action: "SELECT", event: `Viewing ${results.rows.length} product's from ${userData?.company}`, actor: userData.id }, req)
+        return sendResponse(res, 0, 200, "Sorry, No Record Found", [])
+    }
+    CatchHistory({ api_response: `User with ${userData.id} viewed ${results.rows.length} product record's`, function_name: 'ViewTenantOutletProduct', date_started: systemDate, sql_action: "SELECT", event: "Product View", actor: userData.id }, req)
+
+    sendResponse(res, 1, 200, "Record Found", results.rows)
+})
 exports.SearchTenantProduct = asynHandler(async (req, res, next) => {
     let userData = req.user;
     let tenant_id = userData?.tenant_id

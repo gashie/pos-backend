@@ -67,7 +67,7 @@ shopdb.FindById = (product_id, tenant_id) => {
         });
     });
 };
-shopdb.FindOutletProductById = (product_id, tenant_id) => {
+shopdb.FindOutletProductById = (product_id, tenant_id,outlet_id) => {
     return new Promise((resolve, reject) => {
         pool.query(`
         SELECT 
@@ -75,8 +75,50 @@ shopdb.FindOutletProductById = (product_id, tenant_id) => {
         oi.stock_quantity
 FROM product p
 INNER JOIN outlet_inventory oi ON p.product_id = oi.product_id
-WHERE p.product_id = $1 AND p.tenant_id = $2;
-        `, [product_id, tenant_id], (err, results) => {
+WHERE oi.product_id = $1 AND oi.tenant_id = $2 AND oi.outlet_id = $3;
+        `, [product_id, tenant_id,outlet_id], (err, results) => {
+            if (err) {
+                logger.error(err);
+                return reject(err);
+            }
+
+            return resolve(results);
+        });
+    });
+};
+shopdb.FindOutletProductByOutletId = (outlet_id, tenant_id) => {
+    return new Promise((resolve, reject) => {
+        pool.query(`
+        SELECT 
+        p.*,
+        oi.stock_quantity
+FROM product p
+INNER JOIN outlet_inventory oi ON p.product_id = oi.product_id
+WHERE oi.outlet_id = $1 AND p.tenant_id = $2;
+        `, [outlet_id, tenant_id], (err, results) => {
+            if (err) {
+                logger.error(err);
+                return reject(err);
+            }
+
+            return resolve(results);
+        });
+    });
+};
+shopdb.FindItemsToPick = (transfer_id) => {
+    return new Promise((resolve, reject) => {
+        pool.query(`
+        SELECT p.*,
+        CONCAT  (ac.first_name, ' ', ac.last_name) AS "picked_up_by_full_name"
+        FROM consignment AS c
+        INNER JOIN product AS p ON c.product_id = p.product_id
+        INNER JOIN
+                account AS ac
+            ON
+                ac.account_id = c.picked_up_by
+        WHERE c.transfer_id = $1;
+        
+        `, [transfer_id], (err, results) => {
             if (err) {
                 logger.error(err);
                 return reject(err);

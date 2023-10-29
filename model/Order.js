@@ -104,4 +104,16 @@ shopdb.OrderTkeOut = (qty,product_id) => {
         });
     });
 };
+shopdb.OutletOrderTkeOut = (qty,product_id,outlet_id) => {
+    return new Promise((resolve, reject) => {
+        pool.query(`UPDATE outlet_inventory SET stock_quantity = stock_quantity - $1 WHERE product_id = $2 AND outlet_id = $3`, [qty,product_id,outlet_id], (err, results) => {
+            if (err) {
+                logger.error(err);
+                return reject(err);
+            }
+
+            return resolve(results);
+        });
+    });
+};
 module.exports = shopdb
