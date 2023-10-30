@@ -9,6 +9,7 @@ shopdb.FetchTransferData = (start,end,tenant_id) => {
         SELECT 
         transfer.transfer_id,
         transfer.source_outlet_id,
+        transfer.transfer_from,
         source_outlet.outlet_name AS source_outlet_name,
         transfer.destination_outlet_id,
         destination_outlet.outlet_name AS destination_outlet_name,
