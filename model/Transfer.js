@@ -16,6 +16,7 @@ shopdb.FetchTransferData = (start,end,tenant_id) => {
         transfer.transfer_date,
         transfer.notes,
         transfer.is_acknowledged,
+        transfer.accept_status,
         transfer.ref_code,
         transfer.reference,
         transfer.processed_by,
