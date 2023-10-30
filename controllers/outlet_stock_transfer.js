@@ -55,22 +55,22 @@ exports.ViewStockTransfer = asynHandler(async (req, res) => {
 })
 exports.ViewStocksForTransfer = asynHandler(async (req, res) => {
     let userData = req.user;
-    let {transfer_id} = req.body
+    let { transfer_id } = req.body
     let tenant_id = userData?.tenant_id
     let trasferData = req.transfer
     let results = await FindTransferData(transfer_id, tenant_id);
-    let source_outlet_product = await FindOutletProductByOutletId(trasferData?.source_outlet_id,tenant_id);
+    let source_outlet_product = await FindOutletProductByOutletId(trasferData?.source_outlet_id, tenant_id);
 
     if (results.rows.length == 0) {
         CatchHistory({ api_response: "No Record Found", function_name: 'ViewStockTransfer', date_started: systemDate, sql_action: "SELECT", event: `View stock transfer from ${start} - ${end}`, actor: userData?.id }, req)
         return sendResponse(res, 0, 200, "Sorry, No Record Found", [])
     }
-    sendResponse(res, 1, 200, "Record Found", {transfer_info:results.rows,product_count:source_outlet_product.rows.length,product_from_source:source_outlet_product.rows})
-   
+    sendResponse(res, 1, 200, "Record Found", { transfer_info: results.rows, product_count: source_outlet_product.rows.length, product_from_source: source_outlet_product.rows })
+
 })
 exports.ViewStocksPickedForTransfer = asynHandler(async (req, res) => {
     let userData = req.user;
-    let {transfer_id} = req.body
+    let { transfer_id } = req.body
     let tenant_id = userData?.tenant_id
     let trasferData = req.transfer
     let results = await FindTransferData(transfer_id, tenant_id);
@@ -80,8 +80,8 @@ exports.ViewStocksPickedForTransfer = asynHandler(async (req, res) => {
         CatchHistory({ api_response: "No Record Found", function_name: 'ViewStocksPickedForTransfer', date_started: systemDate, sql_action: "SELECT", event: `View items to pick up transfer`, actor: userData?.id }, req)
         return sendResponse(res, 0, 200, "Sorry, No Record Found", [])
     }
-    sendResponse(res, 1, 200, "Record Found", {transfer_info:results.rows,items_count:pickupitems.rows.length,product_to_pickup:pickupitems.rows})
-   
+    sendResponse(res, 1, 200, "Record Found", { transfer_info: results.rows, items_count: pickupitems.rows.length, product_to_pickup: pickupitems.rows })
+
 })
 exports.CancelTransfer = asynHandler(async (req, res, next) => {
     let { transfer_id } = req.body;
@@ -144,7 +144,12 @@ exports.ReceiveConsignment = asynHandler(async (req, res, next) => {
 
     if (status === "reject") {
         // update transfer data,
-        await GlobalModel.Update({ is_acknowledged: true }, 'transfer_stock', 'tenant_id', tenant_id)
+        let detect_accept_status = status === 'accept' ? 'accepted' : 'rejected'
+        let object_payload = {
+            is_acknowledged: true,
+            accept_status: detect_accept_status
+        }
+        await GlobalModel.Update(object_payload, 'transfer_stock', 'transfer_id', transfer_id)
         //update aknowlegment
         let payload = {
             transfer_id,
@@ -155,7 +160,7 @@ exports.ReceiveConsignment = asynHandler(async (req, res, next) => {
         let results = await GlobalModel.Create(payload, 'transfer_acknowledgment', '');
         if (results.rowCount == 1) {
             CatchHistory({ payload: JSON.stringify(payload), api_response: `New acknowledgement added`, function_name: 'ReceiveConsignment', date_started: systemDate, sql_action: "INSERT", event: "Acknowledge consignment", actor: userData.id }, req)
-            return sendResponse(res, 1, 200, "Record saved", [])
+            return sendResponse(res, 1, 200, "Consignment  acknowleged and rejected", payload)
         } else {
             CatchHistory({ payload: JSON.stringify(payload), api_response: `Sorry, error saving record: contact administrator`, function_name: 'ReceiveConsignment', date_started: systemDate, sql_action: "INSERT", event: "Acknowledge consignment", actor: userData.id }, req)
             return sendResponse(res, 0, 200, "Sorry, error saving record: contact administrator", [])
@@ -202,7 +207,7 @@ exports.ReceiveConsignment = asynHandler(async (req, res, next) => {
                 let product = await GlobalModel.Finder(tableName2, columnsToSelect2, conditions2)
                 let foundProduct = product.rows[0];
                 if (foundProduct) {  //if found update quantity
-                    await TransferTakeOut(item.quantity, item.product_id,item.outlet_id)
+                    await TransferTakeOut(item.quantity, item.product_id, item.outlet_id)
                 } else {
                     await GlobalModel.Create(payload, 'outlet_inventory', '');
                 }
@@ -221,16 +226,16 @@ exports.ReceiveConsignment = asynHandler(async (req, res, next) => {
                 let product = await GlobalModel.Finder(tableName2, columnsToSelect2, conditions2)
                 let foundProduct = product.rows[0];
                 if (foundProduct) {  //if found update quantity
-                    await TransferTakeOut(item.quantity, item.product_id,item.outlet_id)
+                    await TransferTakeOut(item.quantity, item.product_id, item.outlet_id)
                 } else {
                     await GlobalModel.Create(payload, 'outlet_inventory', '');
                 }
-               
+
 
             }
 
             if (!--itemCount) {
-               isDone = true;
+                isDone = true;
                 console.log(" => This is the last iteration...");
 
             } else {
@@ -239,8 +244,12 @@ exports.ReceiveConsignment = asynHandler(async (req, res, next) => {
             }
         }
         if (isDone) {
-            let detect_accept_status = status === 'accept'?'accepted':'rejected'
-            await GlobalModel.Update({ is_acknowledged: true,accept_status:detect_accept_status }, 'transfer_stock', 'transfer_id', transfer_id)
+            let detect_accept_status = status === 'accept' ? 'accepted' : 'rejected'
+            let object_payload = {
+                is_acknowledged: true,
+                accept_status: detect_accept_status
+            }
+            await GlobalModel.Update(object_payload, 'transfer_stock', 'transfer_id', transfer_id)
             let payload = {
                 transfer_id,
                 is_confirmed: true,
