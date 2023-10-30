@@ -240,7 +240,7 @@ exports.ReceiveConsignment = asynHandler(async (req, res, next) => {
         }
         if (isDone) {
             let detect_accept_status = status === 'accept'?'accepted':'rejected'
-            await GlobalModel.Update({ is_acknowledged: true,accept_status:detect_accept_status }, 'transfer_stock', 'tenant_id', tenant_id)
+            await GlobalModel.Update({ is_acknowledged: true,accept_status:detect_accept_status }, 'transfer_stock', 'transfer_id', transfer_id)
             let payload = {
                 transfer_id,
                 is_confirmed: true,
