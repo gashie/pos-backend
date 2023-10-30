@@ -2,7 +2,7 @@ const asynHandler = require("../middleware/async");
 const { sendResponse, CatchHistory } = require("../helper/utilfunc");
 const GlobalModel = require("../model/Global")
 
-const { autoProcessQuantity, autoDbProcessQuantity, autoDbOutletProcessQuantity } = require("../helper/autoSavers");
+const { autoProcessQuantity, autoDbProcessQuantity, autoDbOutletProcessQuantity, processOutletQuantity } = require("../helper/autoSavers");
 const { calculatePaymentDetails } = require("../helper/global");
 const { FetchOrderByDate, FetchOrderCardsByDate } = require("../model/Order");
 
@@ -140,7 +140,7 @@ exports.CreateOrder = asynHandler(async (req, res, next) => {
   let payload = req.body;
   payload.tenant_id = tenant_id
   let ExistingProduct = req.product
-  let ordered_list = []
+  let outlet_id = userData?.default_outlet_id
   //generate order reference
   let refresult = await GlobalModel.FetchRef(userData?.company.toUpperCase());
   let refcode = refresult.rows[0].generate_order_code
@@ -195,7 +195,7 @@ exports.CreateOrder = asynHandler(async (req, res, next) => {
       }
 
       await GlobalModel.Create(ordereditems, 'order_items', '');
-      autoDbOutletProcessQuantity(req, item.qty, item.product_id, userData.id);
+      processOutletQuantity(req, item.qty, item.product_id, userData.id,outlet_id);
     }
   }
 

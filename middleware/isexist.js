@@ -344,6 +344,7 @@ exports.findExistingStock = asynHandler(async (req, res, next) => {
 exports.findExistingBeforeSell = asynHandler(async (req, res, next) => {
   let userData = req.user;
   let tenant_id = userData?.tenant_id
+  let outlet_id = userData?.default_outlet_id
   let { items } = req.body
   let ExistingProduct = []
 
@@ -352,11 +353,13 @@ exports.findExistingBeforeSell = asynHandler(async (req, res, next) => {
   let errorMessages = '';
 
   for (const iterator of items) {
-    const product = await ProductModel.FindOutletProductById(iterator.product_id, tenant_id);
+    const product = await ProductModel.FindOutletProductById(iterator.product_id, tenant_id,outlet_id);
     let foundProduct = product.rows[0];
     let price = iterator?.price_type === 'wholesale' ? foundProduct?.wholesale_price : foundProduct?.prod_price;
     let prodQty = Number(foundProduct?.stock_quantity);
-  
+  console.log('====================================');
+  console.log(prodQty);
+  console.log('====================================');
     if (product.rowCount == 0) {
       errorMessages += 'Sorry, product does not exist. ';
     } else if (prodQty < iterator?.qty) {
@@ -378,7 +381,7 @@ exports.findExistingBeforeSell = asynHandler(async (req, res, next) => {
   // If there are no errors, update the request body and proceed.
   req.body.items = items;
   req.product = ExistingProduct;
-  return next();
+return next();
   
 
 });
