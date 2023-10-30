@@ -43,9 +43,17 @@ FROM
     });
 };
 
-shopdb.FindBySerial = (serial, tenant_id) => {
+shopdb.FindBySerial = (serial, tenant_id,outlet_id) => {
     return new Promise((resolve, reject) => {
-        pool.query(`SELECT * FROM product WHERE serial = $1 AND tenant_id = $2`, [serial, tenant_id], (err, results) => {
+        pool.query(`
+        SELECT 
+        p.*,
+        oi.stock_quantity
+FROM product p
+INNER JOIN outlet_inventory oi ON p.product_id = oi.product_id
+WHERE p.serial = $1 AND oi.tenant_id = $2 AND oi.outlet_id = $3
+        
+        `, [serial, tenant_id,outlet_id], (err, results) => {
             if (err) {
                 logger.error(err);
                 return reject(err);

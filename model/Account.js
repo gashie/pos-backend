@@ -14,7 +14,7 @@ shopdb.ValidateDynamicValue = (variable, value) => {
             return resolve(results);
         });
     });
-};
+}; 
 
 shopdb.auth = (username) => {
     return new Promise((resolve, reject) => {
@@ -39,6 +39,34 @@ shopdb.auth = (username) => {
 
                 return resolve(results);
             });
+    });
+};
+
+shopdb.ShowTenantUsers = (tenant_id) => {
+    return new Promise((resolve, reject) => {
+        pool.query(`
+        SELECT 
+        account_id, 
+        tenant_id, 
+        username, 
+        email, 
+        phone, 
+        first_name, 
+        last_name, 
+        is_verified, 
+        is_active, 
+        created_at, 
+        updated_at, 
+        role,
+        deleted_at
+        FROM account WHERE tenant_id = $1`, [tenant_id], (err, results) => {
+            if (err) {
+                logger.error(err);
+                return reject(err);
+            }
+
+            return resolve(results);
+        });
     });
 };
 

@@ -2,7 +2,9 @@ const asynHandler = require("../middleware/async");
 const bcyrpt = require("bcrypt");
 
 const { sendResponse, CatchHistory } = require("../helper/utilfunc");
-const GlobalModel = require("../model/Global")
+const GlobalModel = require("../model/Global");
+const { ShowTenantUsers } = require("../model/Account");
+const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 
 exports.TenantSignup = asynHandler(async (req, res, next) => {
     //check if email,phone number,username exist
@@ -58,4 +60,17 @@ exports.TenantSignup = asynHandler(async (req, res, next) => {
 
     }
 
+})
+
+exports.ViewTenantUsers = asynHandler(async (req, res, next) => {
+    let userData = req.user;
+    let tenant_id = userData?.tenant_id
+    let results = await ShowTenantUsers(tenant_id);
+    if (results.rows.length == 0) {
+        CatchHistory({ api_response: "No Record Found", function_name: 'ViewTenantUsers', date_started: systemDate, sql_action: "SELECT", event: `View all users for tenant with id ${tenant_id}`, actor: userData.id }, req)
+        return sendResponse(res, 0, 200, "Sorry, No Record Found", [])
+    }
+    CatchHistory({ api_response: `User with ${userData.id} viewed ${results.rows.length} users record's`, function_name: 'ViewTenantUsers', date_started: systemDate, sql_action: "SELECT", event: `View all users for tenant with id ${tenant_id}`, actor: userData.id }, req)
+
+    sendResponse(res, 1, 200, "Record Found", results.rows)
 })

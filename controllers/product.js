@@ -58,8 +58,10 @@ exports.ViewTenantOutletProduct = asynHandler(async (req, res, next) => {
 exports.SearchTenantProduct = asynHandler(async (req, res, next) => {
     let userData = req.user;
     let tenant_id = userData?.tenant_id
+    let default_outlet_id = userData?.default_outlet_id
+
     let { serial } = req.body
-    let results = await ProductModel.FindBySerial(serial, tenant_id);
+    let results = await ProductModel.FindBySerial(serial, tenant_id,default_outlet_id);
 
     if (results.rows.length == 0) {
         CatchHistory({ api_response: "No Record Found", function_name: 'SearchTenantProduct', date_started: systemDate, sql_action: "SELECT", event: "Product Search By Serial", actor: userData.id }, req)
@@ -73,8 +75,10 @@ exports.SearchTenantProduct = asynHandler(async (req, res, next) => {
 exports.FindTenantProduct = asynHandler(async (req, res, next) => {
     let userData = req.user;
     let tenant_id = userData?.tenant_id
+    let default_outlet_id = userData?.default_outlet_id
+
     let { id } = req.body
-    let results = await ProductModel.FindById(id, tenant_id);
+    let results = await ProductModel.FindOutletProductById(id, tenant_id,default_outlet_id);
     if (results.rows.length == 0) {
         CatchHistory({ api_response: "No Record Found", function_name: 'FindTenantProduct', date_started: systemDate, sql_action: "SELECT", event: "Product Search By Id", actor: userData.id }, req)
         return sendResponse(res, 0, 200, "Sorry, No Record Found", [])
