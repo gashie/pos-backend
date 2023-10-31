@@ -38,6 +38,7 @@ const { CreateInventory, SearchInventory, ViewTenantInventory, UpdateInventory, 
 const { CreateOrder, ViewGeneralOrderByDate, ViewCreditOrderByDate, PayCredit } = require("../controllers/order");
 const { SendStockToOutlet, ViewStockTransfer, CancelTransfer, PickUpConsignment, ReceiveConsignment, ViewStocksForTransfer, ViewStocksPickedForTransfer } = require("../controllers/outlet_stock_transfer");
 const { CreateIncomeCategory, ViewTenantIncomeCategory, UpdateIncomeCategory, AddIncomeData, ViewTenantIncomeData, UpdateIncomeData } = require("../controllers/income");
+const { CreateExpensesCategory, ViewTenantExpensesCategory, UpdateExpenseCategory, AddExpenseData, ViewTenantExpenseData, UpdateExpenseData } = require("../controllers/expenses");
 
 
 //routes
@@ -111,13 +112,24 @@ router.route("/pickupconsignment").post(protect,findTransfer,findExistingBeforeP
 router.route("/receiveconsignment").post(protect,findTransferNotApproved,ReceiveConsignment);
 router.route("/viewstockfortransfer").post(protect,findTransfer,ViewStocksForTransfer);
 
+//income category
 router.route("/addincomecategory").post(protect,CreateIncomeCategory);
 router.route("/viewincomecategory").post(protect,ViewTenantIncomeCategory);
 router.route("/updateincomecategory").post(protect,UpdateIncomeCategory);
-
+//expense category
 router.route("/addincome").post(protect,AddIncomeData);
 router.route("/viewincome").post(protect,ViewTenantIncomeData);
 router.route("/updateincome").post(protect,UpdateIncomeData);
+
+
+//expense category
+router.route("/addexpensecategory").post(protect,CreateExpensesCategory);
+router.route("/viewexpensecategory").post(protect,ViewTenantExpensesCategory);
+router.route("/updateexpensecategory").post(protect,UpdateExpenseCategory);
+//expense category
+router.route("/addexpense").post(protect,AddExpenseData);
+router.route("/viewexpense").post(protect,ViewTenantExpenseData);
+router.route("/updateexpense").post(protect,UpdateExpenseData);
 
 //order  routes
 router.route("/sell").post(protect,findExistingBeforeSell,CreateOrder);
