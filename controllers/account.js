@@ -68,14 +68,14 @@ exports.UserSignup = asynHandler(async (req, res, next) => {
     let tenant_id = userData?.tenant_id
     let { account } = req.body
     let accountData = {
-        "username": req.body.username,
-        "email": req.body.email,
-        "phone": req.body.phone,
-        "first_name": req.body.first_name,
-        "last_name": req.body.last_name,
-        "password": req.body.password,
-        "is_verified": req.body.is_verified,
-        "is_active": req.body.is_active,
+        "username": account.username,
+        "email": account.email,
+        "phone": account.phone,
+        "first_name": account.first_name,
+        "last_name": account.last_name,
+        "password": account.password,
+        "is_verified": account.is_verified,
+        "is_active": account.is_active,
         tenant_id
     }
     const salt = await bcyrpt.genSalt(10);
@@ -102,27 +102,29 @@ exports.UserSignup = asynHandler(async (req, res, next) => {
 })
 exports.UpdateUser = asynHandler(async (req, res, next) => {
     let userData = req.user;
+    let { account } = req.body
+
     let payload = {
-        "account_id": req.body.account_id,
-        "username": req.body.username,
-        "email": req.body.email,
-        "phone": req.body.phone,
-        "role": req.body.role,
-        "first_name": req.body.first_name,
-        "last_name": req.body.last_name,
-        "is_verified": req.body.is_verified,
-        "is_active": req.body.is_active,
+        "account_id": account.account_id,
+        "username": account.username,
+        "email": account.email,
+        "phone": account.phone,
+        "role": account.role,
+        "first_name": account.first_name,
+        "last_name": account.last_name,
+        "is_verified": account.is_verified,
+        "is_active": account.is_active,
     }
     payload.updated_at = systemDate
 
     const runupdate = await GlobalModel.Update(payload, 'account', 'account_id', payload.account_id)
     if (runupdate.rowCount == 1) {
-        CatchHistory({ payload: JSON.stringify(req.body), api_response: `User with id :${userData.id} updated user details`, function_name: 'UpdateUser', date_started: systemDate, sql_action: "UPDATE", event: "Update User profile", actor: userData.id }, req)
+        CatchHistory({ api_response: `User with id :${userData.id} updated user details`, function_name: 'UpdateUser', date_started: systemDate, sql_action: "UPDATE", event: "Update User profile", actor: userData.id }, req)
         return sendResponse(res, 1, 200, "Record Updated",runupdate.rows[0])
 
 
     } else {
-        CatchHistory({ payload: JSON.stringify(req.body), api_response: `Update failed, please try later-User with id :${userData.id} updated user details`, function_name: 'UpdateUser', date_started: systemDate, sql_action: "UPDATE", event: "Update user profile", actor: userData.id }, req)
+        CatchHistory({ api_response: `Update failed, please try later-User with id :${userData.id} updated user details`, function_name: 'UpdateUser', date_started: systemDate, sql_action: "UPDATE", event: "Update user profile", actor: userData.id }, req)
         return sendResponse(res, 0, 200, "Update failed, please try later", [])
     }
 })
