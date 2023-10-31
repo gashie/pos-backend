@@ -10,7 +10,7 @@ const { tenantExist } = require('../middleware/tenant')
 
 //TENANT CONTROLLER
 const {
-   TenantSignup, ViewTenantUsers
+   TenantSignup, ViewTenantUsers, UserSignup
 } = require("../controllers/account");
 
 //TENANT AUTH CONTROLLER
@@ -35,13 +35,14 @@ const {
    } = require("../controllers/product");
 const { ProdPicVerify, UpdateProdPicVerify } = require("../middleware/prodmiddleware");
 const { CreateInventory, SearchInventory, ViewTenantInventory, UpdateInventory, ViewTenantInventoryHistory } = require("../controllers/inventory");
-const { CreateOrder, ViewGeneralOrderByDate } = require("../controllers/order");
+const { CreateOrder, ViewGeneralOrderByDate, ViewCreditOrderByDate } = require("../controllers/order");
 const { SendStockToOutlet, ViewStockTransfer, CancelTransfer, PickUpConsignment, ReceiveConsignment, ViewStocksForTransfer, ViewStocksPickedForTransfer } = require("../controllers/outlet_stock_transfer");
 
 
 //routes
 router.route("/tenantsignup").post(accountExist, tenantExist, TenantSignup);
 router.route("/viewusers").post(protect,ViewTenantUsers);
+router.route("/createuser").post(protect,UserSignup);
 
 
 
@@ -111,4 +112,5 @@ router.route("/viewstockfortransfer").post(protect,findTransfer,ViewStocksForTra
 //order  routes
 router.route("/sell").post(protect,findExistingBeforeSell,CreateOrder);
 router.route("/sales").post(protect,ViewGeneralOrderByDate);
+router.route("/credit_history").post(protect,ViewCreditOrderByDate);
 module.exports = router;

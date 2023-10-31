@@ -42,11 +42,11 @@ exports.TenantSignup = asynHandler(async (req, res, next) => {
         let accountSavedData = results.rows[0]
         if (results.rowCount == 1) {
             let shopAssigned = {
-                outlet_id:shopSavedData.outlet_id,
-                user_id:accountSavedData.account_id,
-                role:"Admin",
+                outlet_id: shopSavedData.outlet_id,
+                user_id: accountSavedData.account_id,
+                role: "Admin",
                 is_default: true,
-                
+
             }
             await GlobalModel.Create(shopAssigned, 'shop_user_access', '');
             return sendResponse(res, 1, 200, "Record saved", [])
@@ -59,6 +59,43 @@ exports.TenantSignup = asynHandler(async (req, res, next) => {
         return sendResponse(res, 0, 200, "Sorry, error saving record: contact administrator", [])
 
     }
+
+})
+exports.UserSignup = asynHandler(async (req, res, next) => {
+    //check if email,phone number,username exist
+    //check if business name exist in the system
+    let userData = req.user;
+    let tenant_id = userData?.tenant_id
+    let { account } = req.body
+    let accountData = {
+        "username": req.body.username,
+        "email": req.body.email,
+        "phone": req.body.phone,
+        "first_name": req.body.first_name,
+        "last_name": req.body.last_name,
+        "password": req.body.password,
+        tenant_id
+    }
+    const salt = await bcyrpt.genSalt(10);
+    accountData.password = await bcyrpt.hash(account.password, salt);
+
+    let results = await GlobalModel.Create(accountData, 'account', 'account_id');
+    let accountSavedData = results.rows[0]
+    if (results.rowCount == 1) {
+        let shopAssigned = {
+            outlet_id: account.outlet_id,
+            user_id: accountSavedData.account_id,
+            role: account?.role,
+            is_default: account?.is_default,
+
+        }
+        await GlobalModel.Create(shopAssigned, 'shop_user_access', '');
+        return sendResponse(res, 1, 200, "Record saved", [])
+    } else {
+        return sendResponse(res, 0, 200, "Sorry, error saving record: contact administrator", [])
+
+    }
+
 
 })
 

@@ -4,7 +4,7 @@ const GlobalModel = require("../model/Global")
 
 const { autoProcessQuantity, autoDbProcessQuantity, autoDbOutletProcessQuantity, processOutletQuantity } = require("../helper/autoSavers");
 const { calculatePaymentDetails } = require("../helper/global");
-const { FetchOrderByDate, FetchOrderCardsByDate } = require("../model/Order");
+const { FetchOrderByDate, FetchOrderCardsByDate, FetchCreditOrderByDate, FetchCreditOrderCardsByDate } = require("../model/Order");
 
 const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 
@@ -263,7 +263,22 @@ exports.ViewGeneralOrderByDate = asynHandler(async (req, res) => {
   let results = await FetchOrderByDate(start, today, tenant_id);
   let cards = await FetchOrderCardsByDate(start, today, tenant_id);
   if (results.rows.length == 0) {
-    CatchHistory({ api_response: "No Record Found", function_name: 'ViewGeneralOrderByDate', date_started: systemDate, sql_action: "SELECT", event: `View order from ${start} - ${end}`, actor: '' }, req)
+    CatchHistory({ api_response: "No Record Found", function_name: 'ViewGeneralOrderByDate', date_started: systemDate, sql_action: "SELECT", event: `View order from ${start} - ${end}`, actor:userData?.id }, req)
+    return sendResponse(res, 0, 200, "Sorry, No Record Found", [])
+  }
+  sendResponse(res, 1, 200, "Record Found", { cards_utilities: cards.rows, records: results.rows, })
+})
+exports.ViewCreditOrderByDate = asynHandler(async (req, res) => {
+  let { start, end } = req.body
+  let userData = req.user;
+  let tenant_id = userData?.tenant_id
+  var process_end_date = new Date(end);
+  var final_end_date = process_end_date.setDate(new Date(process_end_date).getDate() + 1);
+  let today = new Date(final_end_date);
+  let results = await FetchCreditOrderByDate(start, today, tenant_id);
+  let cards = await FetchCreditOrderCardsByDate(start, today, tenant_id);
+  if (results.rows.length == 0) {
+    CatchHistory({ api_response: "No Record Found", function_name: 'ViewCreditOrderByDate', date_started: systemDate, sql_action: "SELECT", event: `View credit order from ${start} - ${end}`, actor:userData?.id }, req)
     return sendResponse(res, 0, 200, "Sorry, No Record Found", [])
   }
   sendResponse(res, 1, 200, "Record Found", { cards_utilities: cards.rows, records: results.rows, })
