@@ -57,6 +57,38 @@ module.exports = {
       totalAmountDue,
       totalAmountRemaining,
     };
+  },
+  calculateCreditPaymentDetails: (totalToBePaid,cash_received) => {
+    // Calculate the total amount for all items in the order
+    
+  
+    // Calculate the balance to be given to the customer
+    let balance = cash_received - totalToBePaid;
+  
+    // If the payment method is 'credit' and cash_received is less than totalToBePaid, set balance to zero
+    if (cash_received < totalToBePaid) {
+      balance = 0;
+    }
+  
+    // Initialize credit-related variables
+    let totalAmountPaid = 0;
+    let totalAmountDue = 0;
+    let totalAmountRemaining = 0;
+  
+  
+    if (cash_received < totalToBePaid) {
+      totalAmountPaid = cash_received;
+      totalAmountDue = totalToBePaid;
+      totalAmountRemaining = totalAmountDue - totalAmountPaid;
+    }
+  
+    return {
+      totalToBePaid,
+      balance,
+      totalAmountPaid,
+      totalAmountDue,
+      totalAmountRemaining,
+    };
   }
   
 

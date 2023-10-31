@@ -3,7 +3,7 @@ const { sendResponse, CatchHistory } = require("../helper/utilfunc");
 const GlobalModel = require("../model/Global")
 
 const { autoProcessQuantity, autoDbProcessQuantity, autoDbOutletProcessQuantity, processOutletQuantity } = require("../helper/autoSavers");
-const { calculatePaymentDetails } = require("../helper/global");
+const { calculatePaymentDetails, calculateCreditPaymentDetails } = require("../helper/global");
 const { FetchOrderByDate, FetchOrderCardsByDate, FetchCreditOrderByDate, FetchCreditOrderCardsByDate } = require("../model/Order");
 
 const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
@@ -166,7 +166,7 @@ exports.CreateOrder = asynHandler(async (req, res, next) => {
     delivery_address,
     amount_to_pay: totalToBePaid,
     paid_status: totalAmountRemaining > 0 ? 'unpaid' : 'paid',
-    is_credit: paymentMethod === 'credit' ? true : false,
+    is_credit: totalAmountRemaining < 1 ? true : false,
     total_amount_due: totalAmountDue,
     total_amount_remaining: totalAmountRemaining,
     expected_payment_date,
@@ -282,4 +282,49 @@ exports.ViewCreditOrderByDate = asynHandler(async (req, res) => {
     return sendResponse(res, 0, 200, "Sorry, No Record Found", [])
   }
   sendResponse(res, 1, 200, "Record Found", { cards_utilities: cards.rows, records: results.rows, })
+})
+
+exports.PayCredit = asynHandler(async (req, res, next) => {
+  //
+  let userData = req.user;
+
+  let {total_amount_remaining,order_reference,outlet_id} = req.order
+   let {cash_received,customer_id,order_id,notes,next_payment_date} = req.body
+   let {totalAmountPaid,totalAmountRemaining,balance} = calculateCreditPaymentDetails(Number(total_amount_remaining),Number(cash_received))
+
+   let credit_history = {
+    total_amount_remaining:totalAmountRemaining,
+    complete_credit:totalAmountRemaining > 0 ? false : true,
+   }
+   let order_data = {
+    total_amount_remaining:totalAmountRemaining,
+    status: totalAmountRemaining > 0 ? 'pending' : 'complete',
+    paid_status: totalAmountRemaining > 0 ? 'unpaid' : 'paid',
+
+
+   }
+
+   let pay_data = {
+    customer_id,
+    outlet_id,
+    amount:cash_received,
+    notes,
+    balance,
+    is_completed:totalAmountRemaining > 0 ? false : true,
+    payment_method:"cash",
+    order_reference,
+    order_id,
+    next_payment_date,
+   }
+ await GlobalModel.Update(order_data, 'orders', 'order_id', order_id)
+ await GlobalModel.Update(credit_history, 'credit_history', 'order_id', order_id)
+ let credit_results = await GlobalModel.Create(pay_data, 'credit_payments', '');
+ if (credit_results.rowCount == 1) {
+  CatchHistory({ api_response: `New stock added`, function_name: 'PayCredit', date_started: systemDate, sql_action: "INSERT", event: "Pay credit balance", actor: userData.id }, req)
+  return sendResponse(res, 1, 200, "Record saved",{ credit_history,order_data,pay_data})
+} else {
+  CatchHistory({ api_response: `Sorry, error saving record: contact administrator`, function_name: 'PayCredit', date_started: systemDate, sql_action: "INSERT", event: "Pay credit balance", actor: userData.id }, req)
+  return sendResponse(res, 0, 200, "Sorry, error saving record: contact administrator", [])
+
+}
 })

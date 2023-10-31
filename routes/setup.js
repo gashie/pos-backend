@@ -3,7 +3,7 @@ const router = express.Router();
 const { userLogin } = require('../middleware/validator')
 const { protect } = require('../middleware/auth')
 
-const { accountExist, alreadyAssigned, supplierExist, brandExist, catExist, productExist, findProduct, findExistingStock, findExistingBeforeSell, findOutlet, findTransfer, findExistingBeforePickup, findTransferNotApproved } = require('../middleware/isexist')
+const { accountExist, alreadyAssigned, supplierExist, brandExist, catExist, productExist, findProduct, findExistingStock, findExistingBeforeSell, findOutlet, findTransfer, findExistingBeforePickup, findTransferNotApproved, unPaidCreditOrder } = require('../middleware/isexist')
 const { tenantExist } = require('../middleware/tenant')
 
 
@@ -35,7 +35,7 @@ const {
    } = require("../controllers/product");
 const { ProdPicVerify, UpdateProdPicVerify } = require("../middleware/prodmiddleware");
 const { CreateInventory, SearchInventory, ViewTenantInventory, UpdateInventory, ViewTenantInventoryHistory } = require("../controllers/inventory");
-const { CreateOrder, ViewGeneralOrderByDate, ViewCreditOrderByDate } = require("../controllers/order");
+const { CreateOrder, ViewGeneralOrderByDate, ViewCreditOrderByDate, PayCredit } = require("../controllers/order");
 const { SendStockToOutlet, ViewStockTransfer, CancelTransfer, PickUpConsignment, ReceiveConsignment, ViewStocksForTransfer, ViewStocksPickedForTransfer } = require("../controllers/outlet_stock_transfer");
 
 
@@ -114,4 +114,6 @@ router.route("/viewstockfortransfer").post(protect,findTransfer,ViewStocksForTra
 router.route("/sell").post(protect,findExistingBeforeSell,CreateOrder);
 router.route("/sales").post(protect,ViewGeneralOrderByDate);
 router.route("/credit_history").post(protect,ViewCreditOrderByDate);
+router.route("/pay_credit").post(protect,unPaidCreditOrder,PayCredit);
+
 module.exports = router;

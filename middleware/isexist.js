@@ -478,3 +478,29 @@ exports.findExistingBeforePickup = asynHandler(async (req, res, next) => {
 
 
 });
+
+exports.unPaidCreditOrder = asynHandler(async (req, res, next) => {
+  let userData = req.user;
+  let tenant_id = userData?.tenant_id
+  let { order_id } = req.body
+
+  const tableName = 'orders';
+  const columnsToSelect = []; // Use string values for column names
+  const conditions = [
+    { column: 'order_id', operator: '=', value: order_id },
+    { column: 'tenant_id', operator: '=', value: tenant_id },
+    { column: 'status', operator: '=', value: 'pending' },
+    { column: 'paid_status', operator: '=', value: 'unpaid' },
+  ];
+  let results = await Finder(tableName, columnsToSelect, conditions)
+  let ObjectExist = results.rows[0]
+  if (!ObjectExist) {
+    CatchHistory({ payload: JSON.stringify(req.body), api_response: `Sorry, order with id ${order_id} does not exist`, function_name: 'unPaidCreditOrder', date_started: systemDate, sql_action: "SELECT", event: "view unpaid order for credit payment", actor: userData.id }, req)
+    return sendResponse(res, 0, 200, `Sorry, order with id ${order_id} does not exist`)
+  }
+
+  req.order = ObjectExist
+  return next()
+
+
+});
