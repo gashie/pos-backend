@@ -100,7 +100,32 @@ exports.UserSignup = asynHandler(async (req, res, next) => {
 
 
 })
+exports.UpdateUser = asynHandler(async (req, res, next) => {
+    let userData = req.user;
+    let payload = {
+        "account_id": req.body.account_id,
+        "username": req.body.username,
+        "email": req.body.email,
+        "phone": req.body.phone,
+        "role": req.body.role,
+        "first_name": req.body.first_name,
+        "last_name": req.body.last_name,
+        "is_verified": req.body.is_verified,
+        "is_active": req.body.is_active,
+    }
+    payload.updated_at = systemDate
 
+    const runupdate = await GlobalModel.Update(payload, 'account', 'account_id', payload.account_id)
+    if (runupdate.rowCount == 1) {
+        CatchHistory({ payload: JSON.stringify(req.body), api_response: `User with id :${userData.id} updated user details`, function_name: 'UpdateUser', date_started: systemDate, sql_action: "UPDATE", event: "Update User profile", actor: userData.id }, req)
+        return sendResponse(res, 1, 200, "Record Updated",runupdate.rows[0])
+
+
+    } else {
+        CatchHistory({ payload: JSON.stringify(req.body), api_response: `Update failed, please try later-User with id :${userData.id} updated user details`, function_name: 'UpdateUser', date_started: systemDate, sql_action: "UPDATE", event: "Update user profile", actor: userData.id }, req)
+        return sendResponse(res, 0, 200, "Update failed, please try later", [])
+    }
+})
 exports.ViewTenantUsers = asynHandler(async (req, res, next) => {
     let userData = req.user;
     let tenant_id = userData?.tenant_id
