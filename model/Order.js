@@ -52,7 +52,7 @@ shopdb.FetchOrderByDate = (start, end,tenant_id) => {
         });
     });
 };
-shopdb.FetchCreditOrderByDate = (start, end,tenant_id) => {
+shopdb.FetchCreditOrderByDate = (start, end,tenant_id,complete_credit) => {
     return new Promise((resolve, reject) => {
         pool.query(`
         SELECT
@@ -104,7 +104,7 @@ shopdb.FetchCreditOrderByDate = (start, end,tenant_id) => {
         account AS ac
     ON
         oi.processed_by = ac.account_id
-     WHERE o.order_date >= $1 AND o.order_date  < $2 AND o.tenant_id = $3
+     WHERE o.order_date >= $1 AND o.order_date  < $2 AND o.tenant_id = $3 AND ch.complete_credit = $4
     GROUP BY
         c.customer_id,
         CONCAT  (c.first_name, ' ', c.last_name),
@@ -118,7 +118,7 @@ shopdb.FetchCreditOrderByDate = (start, end,tenant_id) => {
          CONCAT  (ac.first_name, ' ', ac.last_name),
         ch.outlet_id;
     
-        `, [start, end,tenant_id], (err, results) => {
+        `, [start, end,tenant_id,complete_credit], (err, results) => {
             if (err) {
                 logger.error(err);
                 return reject(err);
