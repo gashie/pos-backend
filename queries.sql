@@ -61,3 +61,29 @@ GROUP BY
 	outlet.outlet_name,
 	 CONCAT  (ac.first_name, ' ', ac.last_name),
 	ch.outlet_id;
+
+
+//income year on year
+
+SELECT
+    EXTRACT(YEAR FROM transaction_date) AS year,
+    EXTRACT(MONTH FROM transaction_date) AS month,
+    SUM(amount) AS total_income
+FROM
+    income
+GROUP BY
+    year, month
+ORDER BY
+    year, month;
+
+//expenses monthly
+SELECT
+    EXTRACT(YEAR FROM transaction_date) AS year,
+    EXTRACT(MONTH FROM transaction_date) AS month,
+    SUM(amount) AS total_expenses
+FROM
+    expenses
+GROUP BY
+    year, month
+ORDER BY
+    year, month;
