@@ -74,6 +74,8 @@ exports.UserSignup = asynHandler(async (req, res, next) => {
         "first_name": req.body.first_name,
         "last_name": req.body.last_name,
         "password": req.body.password,
+        "is_verified": req.body.is_verified,
+        "is_active": req.body.is_active,
         tenant_id
     }
     const salt = await bcyrpt.genSalt(10);
