@@ -37,6 +37,7 @@ const { ProdPicVerify, UpdateProdPicVerify } = require("../middleware/prodmiddle
 const { CreateInventory, SearchInventory, ViewTenantInventory, UpdateInventory, ViewTenantInventoryHistory } = require("../controllers/inventory");
 const { CreateOrder, ViewGeneralOrderByDate, ViewCreditOrderByDate, PayCredit } = require("../controllers/order");
 const { SendStockToOutlet, ViewStockTransfer, CancelTransfer, PickUpConsignment, ReceiveConsignment, ViewStocksForTransfer, ViewStocksPickedForTransfer } = require("../controllers/outlet_stock_transfer");
+const { CreateIncomeCategory, ViewTenantIncomeCategory, UpdateIncomeCategory, AddIncomeData, ViewTenantIncomeData, UpdateIncomeData } = require("../controllers/income");
 
 
 //routes
@@ -109,6 +110,14 @@ router.route("/deletetransfer").post(protect,CancelTransfer);
 router.route("/pickupconsignment").post(protect,findTransfer,findExistingBeforePickup,PickUpConsignment);
 router.route("/receiveconsignment").post(protect,findTransferNotApproved,ReceiveConsignment);
 router.route("/viewstockfortransfer").post(protect,findTransfer,ViewStocksForTransfer);
+
+router.route("/addincomecategory").post(protect,CreateIncomeCategory);
+router.route("/viewincomecategory").post(protect,ViewTenantIncomeCategory);
+router.route("/updateincomecategory").post(protect,UpdateIncomeCategory);
+
+router.route("/addincome").post(protect,AddIncomeData);
+router.route("/viewincome").post(protect,ViewTenantIncomeData);
+router.route("/updateincome").post(protect,UpdateIncomeData);
 
 //order  routes
 router.route("/sell").post(protect,findExistingBeforeSell,CreateOrder);
