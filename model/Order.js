@@ -56,71 +56,24 @@ shopdb.FetchCreditOrderByDate = (start, end,tenant_id,complete_credit) => {
     return new Promise((resolve, reject) => {
         pool.query(`
         SELECT
-        c.customer_id,
-        CONCAT  (c.first_name, ' ', c.last_name) AS "customer",
-        c.email,
-        c.phone_number AS phone,
-        o.order_reference,
-        ch.order_id,
-        ch.total_amount_paid,
-        ch.total_amount_remaining,
-        p.prod_name AS product_name,
-        ch.total_amount_due As prod_price,
-        outlet.outlet_name,
-         CONCAT  (ac.first_name, ' ', ac.last_name) AS "processed_by_full_name",
-        ch.outlet_id
-    FROM
-        customers AS c
-    LEFT JOIN
-        (
-            SELECT DISTINCT customer_id
-            FROM orders
-        ) AS distinct_customers
-    ON
-        c.customer_id = distinct_customers.customer_id
-    LEFT JOIN
-        credit_history AS ch
-    ON
-        c.customer_id = ch.customer_id
-    LEFT JOIN
-        orders AS o
-    ON
-        c.customer_id = o.customer_id
-    LEFT JOIN
-        order_items AS oi
-    ON
-        o.order_id = oi.order_id
-    LEFT JOIN
-        outlet_inventory AS oi2
-    ON
-        oi.product_id = oi2.product_id
-    LEFT JOIN
-        product AS p
-    ON
-        oi2.product_id = p.product_id
-    LEFT JOIN
-        outlet AS outlet
-    ON
-        oi.outlet_id = outlet.outlet_id
-    LEFT JOIN
-        account AS ac
-    ON
-        oi.processed_by = ac.account_id
-     WHERE o.order_date >= $1 AND o.order_date  < $2 AND o.tenant_id = $3 AND ch.complete_credit = $4
-    GROUP BY
-        c.customer_id,
-        CONCAT  (c.first_name, ' ', c.last_name),
-        c.email,
-        c.phone_number,
-        o.order_reference,
-        ch.order_id,
-        ch.total_amount_paid,
-        ch.total_amount_remaining,
-        p.prod_name,
-        ch.total_amount_due,
-        outlet.outlet_name,
-         CONCAT  (ac.first_name, ' ', ac.last_name),
-        ch.outlet_id;
+    c.customer_id,
+    CONCAT(c.first_name, ' ', c.last_name) AS "customer",
+    c.email,
+    c.phone_number AS phone,
+    ch.order_id,
+    ch.total_amount_paid,
+    ch.total_amount_remaining,
+    ch.total_amount_due,
+    o.outlet_id,
+    outlet.outlet_name,
+    CONCAT(ac.first_name, ' ', ac.last_name) AS "processed_by_full_name"
+FROM
+    credit_history AS ch
+LEFT JOIN customers AS c ON ch.customer_id = c.customer_id
+LEFT JOIN orders AS o ON ch.order_id = o.order_id
+LEFT JOIN outlet AS outlet ON o.outlet_id = outlet.outlet_id
+LEFT JOIN account AS ac ON o.processed_by = ac.account_id
+WHERE ch.transaction_date >= $1 AND ch.transaction_date  < $2 AND ch.tenant_id = $3 AND ch.complete_credit = $4
     
         `, [start, end,tenant_id,complete_credit], (err, results) => {
             if (err) {
