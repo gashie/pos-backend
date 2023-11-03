@@ -39,7 +39,7 @@ const { CreateOrder, ViewGeneralOrderByDate, ViewCreditOrderByDate, PayCredit } 
 const { SendStockToOutlet, ViewStockTransfer, CancelTransfer, PickUpConsignment, ReceiveConsignment, ViewStocksForTransfer, ViewStocksPickedForTransfer } = require("../controllers/outlet_stock_transfer");
 const { CreateIncomeCategory, ViewTenantIncomeCategory, UpdateIncomeCategory, AddIncomeData, ViewTenantIncomeData, UpdateIncomeData } = require("../controllers/income");
 const { CreateExpensesCategory, ViewTenantExpensesCategory, UpdateExpenseCategory, AddExpenseData, ViewTenantExpenseData, UpdateExpenseData } = require("../controllers/expenses");
-const { IncomeAndExpenseReport } = require("../controllers/report");
+const { IncomeAndExpenseReport, ProductReport } = require("../controllers/report");
 
 
 //routes
@@ -134,6 +134,7 @@ router.route("/updateexpense").post(protect,UpdateExpenseData);
 
 //report
 router.route("/incomexpensereport").post(protect,IncomeAndExpenseReport);
+router.route("/productreport").post(protect,ProductReport);
 
 
 //order  routes

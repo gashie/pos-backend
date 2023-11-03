@@ -1,7 +1,7 @@
 const asynHandler = require("../middleware/async");
 const { sendResponse, CatchHistory } = require("../helper/utilfunc");
 const GlobalModel = require("../model/Global");
-const { IncomeAndExpenseCombined, IncomeReport, ExpenseReport } = require("../model/Reporting");
+const { IncomeAndExpenseCombined, IncomeReport, ExpenseReport, ProductSummariesReport, ProductListReport } = require("../model/Reporting");
 const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 
 
@@ -44,4 +44,19 @@ exports.IncomeAndExpenseReport = asynHandler(async (req, res, next) => {
         return sendResponse(res, 1, 200, "Record Found", results.rows)
 
     }
+})
+exports.ProductReport = asynHandler(async (req, res, next) => {
+    let userData = req.user;
+    let tenant_id = userData?.tenant_id
+
+
+        let results = await ProductSummariesReport(tenant_id);
+        let products = await ProductListReport(tenant_id);
+   
+        CatchHistory({ api_response: `User with ${userData.id} viewed ${results.rows.length} income and expense combined report`, function_name: 'ProductReport/summaries/productlist', date_started: systemDate, sql_action: "SELECT", event: "View products report", actor: userData.id }, req)
+
+        return sendResponse(res, 1, 200, "Record Found", {summaries: results.rows, products:products.rows})
+
+
+
 })
