@@ -221,11 +221,25 @@ exports.CreateOrder = asynHandler(async (req, res, next) => {
     recorded_by: userData?.id,
     remarks: notes,
   }
+
+  let pay_data = {
+    customer_id:customer,
+    outlet_id:userData?.default_outlet_id,
+    amount:cash_received,
+    notes,
+    balance,
+    is_completed:totalAmountRemaining > 0 ? false : true,
+    payment_method,
+    order_reference:refcode,
+    order_id,
+    next_payment_date:expected_payment_date,
+   }
   if (totalAmountRemaining > 0) {
     //save credit
     //save charges
     let credit_results = await GlobalModel.Create(creditPayload, 'credit_history', '');
     let charge_results = await GlobalModel.Create(chargePayload, 'fees_charged', '');
+     GlobalModel.Create(pay_data, 'credit_payments', '');
     if (credit_results.rowCount == 1 && charge_results.rowCount == 1) {
       CatchHistory({ api_response: `New sales added`, function_name: 'CreateOrder', date_started: systemDate, sql_action: "INSERT", event: "Buy product", actor: userData.id }, req)
       return sendResponse(res, 1, 200, "Record saved", orderPayload)
