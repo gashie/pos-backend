@@ -11,19 +11,19 @@ const { tenantExist } = require('../middleware/tenant')
 //TENANT CONTROLLER
 const {
    TenantSignup, ViewTenantUsers, UserSignup, UpdateUser
-} = require("../controllers/account");
+} = require("../controllers/pos/account");
 
 //TENANT AUTH CONTROLLER
 const {
    Auth, Logout, VerifyUser
-} = require("../controllers/auth");
+} = require("../controllers/pos/auth");
 //SHOP CONTROLLER
-const { CreateShop, ViewTenantShops, UpdateShop, AssignToShop } = require("../controllers/shop");
-const { CreateSupplier, UpdateSupplier, ViewTenantSupplier } = require("../controllers/supplier");
-const { CreateBrand, ViewTenantBrand, UpdateBrand } = require("../controllers/brand");
-const { CreateItemUnit, ViewItemUnit, UpdateItemUnit } = require("../controllers/units");
-const { CreateCategory, ViewTenantCategory, UpdateCategory } = require("../controllers/category");
-const { CreateCustomer, ViewTenantCustomers, UpdateCustomer } = require("../controllers/customer");
+const { CreateShop, ViewTenantShops, UpdateShop, AssignToShop } = require("../controllers/pos/shop");
+const { CreateSupplier, UpdateSupplier, ViewTenantSupplier } = require("../controllers/pos/supplier");
+const { CreateBrand, ViewTenantBrand, UpdateBrand } = require("../controllers/pos/brand");
+const { CreateItemUnit, ViewItemUnit, UpdateItemUnit } = require("../controllers/pos/units");
+const { CreateCategory, ViewTenantCategory, UpdateCategory } = require("../controllers/pos/category");
+const { CreateCustomer, ViewTenantCustomers, UpdateCustomer } = require("../controllers/pos/customer");
 //PRODUCT CONTROLLER
 const {
    CreateProduct,
@@ -32,14 +32,14 @@ const {
    SearchTenantProduct,
    FindTenantProduct,
    ViewTenantOutletProduct
-   } = require("../controllers/product");
+   } = require("../controllers/pos/product");
 const { ProdPicVerify, UpdateProdPicVerify } = require("../middleware/prodmiddleware");
-const { CreateInventory, SearchInventory, ViewTenantInventory, UpdateInventory, ViewTenantInventoryHistory } = require("../controllers/inventory");
-const { CreateOrder, ViewGeneralOrderByDate, ViewCreditOrderByDate, PayCredit } = require("../controllers/order");
-const { SendStockToOutlet, ViewStockTransfer, CancelTransfer, PickUpConsignment, ReceiveConsignment, ViewStocksForTransfer, ViewStocksPickedForTransfer } = require("../controllers/outlet_stock_transfer");
-const { CreateIncomeCategory, ViewTenantIncomeCategory, UpdateIncomeCategory, AddIncomeData, ViewTenantIncomeData, UpdateIncomeData } = require("../controllers/income");
-const { CreateExpensesCategory, ViewTenantExpensesCategory, UpdateExpenseCategory, AddExpenseData, ViewTenantExpenseData, UpdateExpenseData } = require("../controllers/expenses");
-const { IncomeAndExpenseReport, ProductReport } = require("../controllers/report");
+const { CreateInventory, SearchInventory, ViewTenantInventory, UpdateInventory, ViewTenantInventoryHistory } = require("../controllers/pos/inventory");
+const { CreateOrder, ViewGeneralOrderByDate, ViewCreditOrderByDate, PayCredit } = require("../controllers/pos/order");
+const { SendStockToOutlet, ViewStockTransfer, CancelTransfer, PickUpConsignment, ReceiveConsignment, ViewStocksForTransfer, ViewStocksPickedForTransfer } = require("../controllers/pos/outlet_stock_transfer");
+const { CreateIncomeCategory, ViewTenantIncomeCategory, UpdateIncomeCategory, AddIncomeData, ViewTenantIncomeData, UpdateIncomeData } = require("../controllers/pos/income");
+const { CreateExpensesCategory, ViewTenantExpensesCategory, UpdateExpenseCategory, AddExpenseData, ViewTenantExpenseData, UpdateExpenseData } = require("../controllers/pos/expenses");
+const { IncomeAndExpenseReport, ProductReport, SalesByCategory, SalesAndProfitCharges, ViewEmployeePerformance, ViewProfitMargins, ViewOverheadExpenses, ViewReorderReport, ViewReorderReportByOutlet, ViewProfitPerOutlet } = require("../controllers/pos/report");
 
 
 //routes
@@ -135,7 +135,14 @@ router.route("/updateexpense").post(protect,UpdateExpenseData);
 //report
 router.route("/incomexpensereport").post(protect,IncomeAndExpenseReport);
 router.route("/productreport").post(protect,ProductReport);
-
+router.route("/viewsalesbycategory").post(protect,SalesByCategory);
+router.route("/viewsalesandprofitcharges").post(protect,SalesAndProfitCharges);
+router.route("/viewemployeeperformance").post(protect,ViewEmployeePerformance);
+router.route("/vieweprofitmargins").post(protect,ViewProfitMargins);
+router.route("/viewoverheadexpenses").post(protect,ViewOverheadExpenses);
+router.route("/viewereoder").post(protect,ViewReorderReport);
+router.route("/viewereoderbyoutlet").post(protect,ViewReorderReportByOutlet);
+router.route("/viewprofitforoutlet").post(protect,ViewProfitPerOutlet);
 
 //order  routes
 router.route("/sell").post(protect,findExistingBeforeSell,CreateOrder);

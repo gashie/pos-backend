@@ -1,8 +1,8 @@
 const bcrypt = require("bcrypt");
-const asynHandler = require("../middleware/async");
-const Model = require("../model/Account")
-const { sendResponse, sendCookie, clearResponse, CatchHistory } = require("../helper/utilfunc");
-const { FindDefaultShop } = require("../model/Shop");
+const asynHandler = require("../../middleware/async");
+const Model = require("../../model/Account")
+const { sendResponse, sendCookie, clearResponse, CatchHistory } = require("../../helper/utilfunc");
+const { FindDefaultShop } = require("../../model/Shop");
 const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 
 // @desc Login controller

@@ -1,10 +1,10 @@
-const asynHandler = require("../middleware/async");
-const { sendResponse, CatchHistory } = require("../helper/utilfunc");
-const GlobalModel = require("../model/Global")
-const ProductOptionValueModel = require("../model/ProductOptionValue");
-const InventoryModel = require("../model/Inventory");
+const asynHandler = require("../../middleware/async");
+const { sendResponse, CatchHistory } = require("../../helper/utilfunc");
+const GlobalModel = require("../../model/Global")
+const ProductOptionValueModel = require("../../model/ProductOptionValue");
+const InventoryModel = require("../../model/Inventory");
 
-const { autoProcessQuantity, autoProcessOptionValueQuantity } = require("../helper/autoSavers");
+const { autoProcessQuantity, autoProcessOptionValueQuantity } = require("../../helper/autoSavers");
 
 const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 

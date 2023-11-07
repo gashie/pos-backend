@@ -1,8 +1,8 @@
-const asynHandler = require("../middleware/async");
-const { sendResponse, CatchHistory } = require("../helper/utilfunc");
-const GlobalModel = require("../model/Global")
-const ProductModel = require("../model/Product")
-const ProductOptionModel = require("../model/ProductOption")
+const asynHandler = require("../../middleware/async");
+const { sendResponse, CatchHistory } = require("../../helper/utilfunc");
+const GlobalModel = require("../../model/Global")
+const ProductModel = require("../../model/Product")
+const ProductOptionModel = require("../../model/ProductOption")
 
 
 const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");

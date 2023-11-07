@@ -102,7 +102,9 @@ shopdb.FetchOrderCardsByDate = (start, end,tenant_id) => {
         SUM(o.discount_fee) AS total_discount,
         SUM(oi.quantity * oi.unit_price - o.discount_fee) AS total_amount,
         SUM(CASE WHEN o.status = 'pending' THEN oi.quantity * oi.unit_price ELSE 0 END) AS total_credit,
-        SUM(CASE WHEN o.status = 'complete' THEN oi.quantity * oi.unit_price - o.discount_fee ELSE 0 END) AS total_payment
+        SUM(CASE WHEN o.status = 'complete' THEN oi.quantity * oi.unit_price - o.discount_fee ELSE 0 END) AS total_payment,
+        SUM(CASE WHEN o.status = 'complete' THEN oi.quantity * (oi.unit_price - p.cos_price) ELSE 0 END) AS sales_profit,
+        SUM(CASE WHEN o.status = 'pending' THEN oi.quantity * (oi.unit_price - p.cos_price) ELSE 0 END) AS profit_on_credit
     FROM
         orders AS o
     INNER JOIN
@@ -112,7 +114,7 @@ shopdb.FetchOrderCardsByDate = (start, end,tenant_id) => {
     INNER JOIN
         product AS p
     ON
-        oi.product_id = p.product_id
+        oi.product_id = p.product_id    
     WHERE o.order_date >= $1 AND o.order_date < $2 AND o.tenant_id = $3;
     
         `, [start, end,tenant_id], (err, results) => {
@@ -185,4 +187,42 @@ shopdb.OutletOrderTkeOut = (qty,product_id,outlet_id) => {
         });
     });
 };
+shopdb.ProfitByOutletByDate = (start, end,tenant_id) => {
+    return new Promise((resolve, reject) => {
+        pool.query(`
+        SELECT
+        o.outlet_id,
+        ot.outlet_name,
+        SUM(CASE WHEN o.status = 'complete' THEN oi.quantity * (oi.unit_price - p.cos_price) ELSE 0 END) AS profit,
+        SUM(CASE WHEN o.status = 'pending' THEN oi.quantity * oi.unit_price ELSE 0 END) AS total_credit
+    FROM
+        orders AS o
+    INNER JOIN
+        outlet AS ot
+    ON
+        o.outlet_id = ot.outlet_id
+    INNER JOIN
+        order_items AS oi
+    ON
+        o.order_id = oi.order_id
+    INNER JOIN
+        product AS p
+    ON
+        oi.product_id = p.product_id
+        WHERE o.order_date >= $1 AND o.order_date < $2 AND o.tenant_id = $3
+    GROUP BY
+        o.outlet_id, ot.outlet_name
+    ORDER BY
+        profit DESC, total_credit DESC;
+        `, [start, end,tenant_id], (err, results) => {
+            if (err) {
+                logger.error(err);
+                return reject(err);
+            }
+
+            return resolve(results);
+        });
+    });
+};
+
 module.exports = shopdb

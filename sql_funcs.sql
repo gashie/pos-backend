@@ -34,3 +34,4 @@ BEGIN
     RETURN prefix || tenant_prefix || '-' || to_char(NOW(), 'HH24MI-SS-YYYY-MM-DD') || '-' || (SELECT nextval('order_code_seq'));
 END;
 $$ LANGUAGE plpgsql;
+

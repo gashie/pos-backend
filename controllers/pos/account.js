@@ -1,9 +1,9 @@
-const asynHandler = require("../middleware/async");
+const asynHandler = require("../../middleware/async");
 const bcyrpt = require("bcrypt");
 
-const { sendResponse, CatchHistory } = require("../helper/utilfunc");
-const GlobalModel = require("../model/Global");
-const { ShowTenantUsers } = require("../model/Account");
+const { sendResponse, CatchHistory } = require("../../helper/utilfunc");
+const GlobalModel = require("../../model/Global");
+const { ShowTenantUsers } = require("../../model/Account");
 const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 
 exports.TenantSignup = asynHandler(async (req, res, next) => {

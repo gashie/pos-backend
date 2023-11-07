@@ -1,10 +1,10 @@
-const asynHandler = require("../middleware/async");
-const { sendResponse, CatchHistory } = require("../helper/utilfunc");
-const GlobalModel = require("../model/Global")
+const asynHandler = require("../../middleware/async");
+const { sendResponse, CatchHistory } = require("../../helper/utilfunc");
+const GlobalModel = require("../../model/Global")
 
-const { autoProcessQuantity, autoDbProcessQuantity, autoDbOutletProcessQuantity, processOutletQuantity } = require("../helper/autoSavers");
-const { calculatePaymentDetails, calculateCreditPaymentDetails } = require("../helper/global");
-const { FetchOrderByDate, FetchOrderCardsByDate, FetchCreditOrderByDate, FetchCreditOrderCardsByDate } = require("../model/Order");
+const { autoProcessQuantity, autoDbProcessQuantity, autoDbOutletProcessQuantity, processOutletQuantity } = require("../../helper/autoSavers");
+const { calculatePaymentDetails, calculateCreditPaymentDetails } = require("../../helper/global");
+const { FetchOrderByDate, FetchOrderCardsByDate, FetchCreditOrderByDate, FetchCreditOrderCardsByDate } = require("../../model/Order");
 
 const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 

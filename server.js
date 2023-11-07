@@ -6,6 +6,7 @@ const fileupload = require("express-fileupload");
 const errorHandler = require("./middleware/error");
 const { logger, morganMiddleware } = require("./logs/winston");
 const routes = require("./routes/setup");
+const ecommerce_routes = require("./routes/ecommerce_routes");
 const path = require("path")
 const cookieParser = require('cookie-parser')
 //load env vars
@@ -56,6 +57,7 @@ app.use('/upload', express.static(path.join(__dirname, '/upload')))
 
 //Mount routes
 app.use("/api/v1/shop", routes);
+app.use("/api/v1/online", ecommerce_routes);
 
 app.use(errorHandler);
 
