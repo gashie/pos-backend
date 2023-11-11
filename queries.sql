@@ -330,3 +330,90 @@ SELECT
     END AS stock_status
 FROM
     ProductStock;
+
+//summaries
+
+WITH SalesSummary AS (
+    SELECT
+        COUNT(DISTINCT p.product_id) AS total_items_in_warehouse,
+        COUNT(DISTINCT o.outlet_id) AS total_outlets,
+        SUM(CASE WHEN o.status = 'complete' THEN (ot.unit_price * ot.quantity - o.discount_fee) ELSE 0 END) AS total_profit,
+	    COUNT(DISTINCT o.order_id) AS total_items_sold,
+	    SUM(o.charge_amount) AS total_charges,
+        SUM(CASE WHEN o.status = 'pending' THEN o.total_amount ELSE 0 END) AS total_items_sold_on_credit,
+        SUM(CASE WHEN o.status = 'complete' THEN ot.quantity ELSE 0 END) AS total_items_sold_and_paid,
+
+        COUNT(DISTINCT CASE WHEN o.status = 'pending' THEN o.customer_id END) AS customers_on_credit,
+        COUNT(DISTINCT CASE WHEN oi.stock_quantity < oi.min_stock_threshold THEN p.product_id END) AS items_below_min_stock,
+        SUM(CASE WHEN o.status = 'complete' THEN ot.quantity ELSE 0 END) AS total_items_sold_complete,
+        SUM(CASE WHEN o.status = 'pending' THEN o.discount_fee ELSE 0 END) AS total_discount,
+        COUNT(DISTINCT oi.outlet_id) AS total_outlets_inventory,
+        COUNT(DISTINCT c.customer_id) AS total_customers_registered
+    FROM
+        product p
+    LEFT JOIN
+        order_items ot
+    ON
+        p.product_id = ot.product_id
+    LEFT JOIN
+        orders o
+    ON
+        ot.order_id = o.order_id
+    LEFT JOIN
+        outlet_inventory oi
+    ON
+        p.product_id = oi.product_id
+    LEFT JOIN
+        customers c
+    ON
+        c.customer_id = o.customer_id
+    WHERE
+        p.tenant_id = '6608d93e-b06e-4073-8de2-8280e9a813f7'
+)
+SELECT
+    total_items_in_warehouse,
+    total_outlets,
+    total_profit,
+	total_items_sold,
+    total_items_sold_on_credit,
+    total_items_sold_and_paid,
+	total_charges,
+    customers_on_credit,
+    items_below_min_stock,
+    total_items_sold_complete,
+    total_discount,
+    total_outlets_inventory,
+    total_customers_registered
+FROM
+    SalesSummary
+
+
+//charge amount
+SELECT
+    DATE_TRUNC('day', order_date) AS day,
+    SUM(total_amount) AS daily_sales,
+	SUM(charge_amount) AS daily_charges
+FROM
+    orders
+WHERE
+    order_date >= '2023-10-30' AND order_date <= '2023-11-06'
+GROUP BY
+    day
+ORDER BY
+    day;
+//product quantity quantity_sold
+SELECT
+    p.product_id,
+    p.prod_name AS product_name,
+    SUM(oi.quantity) AS total_quantity_sold,
+    SUM(oi.quantity * oi.unit_price) AS total_sales
+FROM
+    product AS p
+LEFT JOIN
+    order_items AS oi
+ON
+    p.product_id = oi.product_id
+GROUP BY
+    p.product_id, p.prod_name
+ORDER BY
+    total_sales DESC;

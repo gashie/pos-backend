@@ -19,7 +19,6 @@ const schema = {
     login: Joi.object({
         username: Joi.string().required().label("Username"),
         password: Joi.string()
-            .min(8)
             .required()
             .label("Password"),
     }),
