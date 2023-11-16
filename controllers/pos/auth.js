@@ -9,7 +9,6 @@ const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 // @route POST /auth
 // @access Public
 exports.Auth = asynHandler(async (req, res) => {
-    console.log(req.headers);
     const { username, password } = req.body
 
     //search for user in db
@@ -55,6 +54,7 @@ exports.Auth = asynHandler(async (req, res) => {
         default_outlet_id:findmyshop.rows[0].outlet_id,
         default_role:findmyshop.rows[0].role,
         subscription_type:UserDbInfo.subscription_type,
+        has_electronic:UserDbInfo.has_electronic
 
     }
 

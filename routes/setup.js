@@ -3,7 +3,7 @@ const router = express.Router();
 const { userLogin } = require('../middleware/validator')
 const { protect } = require('../middleware/auth')
 
-const { accountExist, alreadyAssigned, supplierExist, brandExist, catExist, productExist, findProduct, findExistingStock, findExistingBeforeSell, findOutlet, findTransfer, findExistingBeforePickup, findTransferNotApproved, unPaidCreditOrder } = require('../middleware/isexist')
+const { accountExist, alreadyAssigned, supplierExist, brandExist, catExist, productExist, findProduct, findExistingStock, findExistingBeforeSell, findOutlet, findTransfer, findExistingBeforePickup, findTransferNotApproved, unPaidCreditOrder, allowEcommerce } = require('../middleware/isexist')
 const { tenantExist } = require('../middleware/tenant')
 
 
@@ -18,7 +18,7 @@ const {
    Auth, Logout, VerifyUser
 } = require("../controllers/pos/auth");
 //SHOP CONTROLLER
-const { CreateShop, ViewTenantShops, UpdateShop, AssignToShop } = require("../controllers/pos/shop");
+const { CreateShop, ViewTenantShops, UpdateShop, AssignToShop, CreateEcommerceShop } = require("../controllers/pos/shop");
 const { CreateSupplier, UpdateSupplier, ViewTenantSupplier } = require("../controllers/pos/supplier");
 const { CreateBrand, ViewTenantBrand, UpdateBrand } = require("../controllers/pos/brand");
 const { CreateItemUnit, ViewItemUnit, UpdateItemUnit } = require("../controllers/pos/units");
@@ -58,6 +58,7 @@ router.route("/logout").post(protect, Logout);
 
 //shops
 router.route("/addshop").post(protect,CreateShop);
+router.route("/addecommerce").post(protect,allowEcommerce,CreateEcommerceShop);
 router.route("/assigntoshop").post(protect,alreadyAssigned,AssignToShop);
 router.route("/viewshops").post(protect, ViewTenantShops);
 router.route("/updateshop").post(protect, UpdateShop);

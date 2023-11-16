@@ -9,15 +9,36 @@ exports.CreateShop = asynHandler(async (req, res, next) => {
     let tenant_id = userData?.tenant_id
     let payload = req.body;
     payload.tenant_id = tenant_id
-    if (payload.is_main_shop == true) {
-        await GlobalModel.Update({ is_main_shop: false }, 'outlet', 'tenant_id', payload.tenant_id)
-    }
+    payload.is_electronic = false
+    payload.is_main_shop = false
+    
     let results = await GlobalModel.Create(payload, 'outlet', 'outlet_id');
     if (results.rowCount == 1) {
         CatchHistory({ payload: JSON.stringify(payload), api_response: `New shop added`, function_name: 'CreateShop', date_started: systemDate, sql_action: "INSERT", event: "Create Shop", actor: userData.id }, req)
         return sendResponse(res, 1, 200, "Record saved", results.rows)
     } else {
         CatchHistory({ payload: JSON.stringify(payload), api_response: `Sorry, error saving record: contact administrator`, function_name: 'CreateShop', date_started: systemDate, sql_action: "INSERT", event: "Create Shop", actor: userData.id }, req)
+        return sendResponse(res, 0, 200, "Sorry, error saving record: contact administrator", [])
+
+    }
+
+})
+exports.CreateEcommerceShop = asynHandler(async (req, res, next) => {
+    //check if supplier exist for tenant
+    let userData = req.user;
+    let tenant_id = userData?.tenant_id
+    let payload = req.body;
+    payload.tenant_id = tenant_id
+    payload.is_electronic = true
+    if (payload.is_main_shop == true) {
+        await GlobalModel.Update({ is_main_shop: false }, 'outlet', 'tenant_id', payload.tenant_id)
+    }
+    let results = await GlobalModel.Create(payload, 'outlet', 'outlet_id');
+    if (results.rowCount == 1) {
+        CatchHistory({ payload: JSON.stringify(payload), api_response: `New ecommerce shop added`, function_name: 'CreateEcommerceShop', date_started: systemDate, sql_action: "INSERT", event: "Create Ecommerce Shop", actor: userData.id }, req)
+        return sendResponse(res, 1, 200, "Record saved", results.rows)
+    } else {
+        CatchHistory({ payload: JSON.stringify(payload), api_response: `Sorry, error saving record: contact administrator`, function_name: 'CreateEcommerceShop', date_started: systemDate, sql_action: "INSERT", event: "Create Shop", actor: userData.id }, req)
         return sendResponse(res, 0, 200, "Sorry, error saving record: contact administrator", [])
 
     }

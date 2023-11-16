@@ -504,3 +504,25 @@ exports.unPaidCreditOrder = asynHandler(async (req, res, next) => {
 
 
 });
+exports.allowEcommerce = asynHandler(async (req, res, next) => {
+  let userData = req.user;
+  let tenant_id = userData?.tenant_id
+
+  const tableName = 'outlet';
+  const columnsToSelect = ['outlet_id']; // Use string values for column names
+  const conditions = [
+    { column: 'tenant_id', operator: '=', value: tenant_id },
+    { column: 'is_electronic', operator: '=', value: true },
+  ];
+  let results = await Finder(tableName, columnsToSelect, conditions)
+  let ObjectExist = results.rows[0]
+  if (ObjectExist) {
+    CatchHistory({ payload: JSON.stringify(req.body), api_response: `Sorry, you cannot create more than 1 ecommerce outlet`, function_name: 'allowEcommerce', date_started: systemDate, sql_action: "SELECT", event: "validate ecommerce before setup", actor: userData.id }, req)
+    return sendResponse(res, 0, 200, `Sorry, you cannot create more than 1 ecommerce outlet`)
+  }
+
+  req.order = ObjectExist
+  return next()
+
+
+});
