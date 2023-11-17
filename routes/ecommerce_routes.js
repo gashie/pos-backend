@@ -12,6 +12,7 @@ const { tenantExist } = require('../middleware/tenant')
 const {
    EcommerceUserSignup, UpdatEcommerceUser
 } = require("../controllers/ecommerce/account");
+const { protectOutlet } = require("../middleware/validate_api_keys");
 
 //TENANT AUTH CONTROLLER
 // const {
@@ -19,7 +20,7 @@ const {
 // } = require("../controllers/ecom/auth");
 
 //routes
-router.route("/signup").post(EcommerceUserSignup);
+router.route("/ecommerce/signup").post(protectOutlet,EcommerceUserSignup);
 
 
 

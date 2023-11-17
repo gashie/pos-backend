@@ -37,9 +37,9 @@ module.exports = {
         });
     },
     sendCookie: async (UserInfo, status, code, res, req) => {
-        let device = await DetectDevice(req.headers['user-agent'], req)
+        // let device = await DetectDevice(req.headers['user-agent'], req)
         let userIp = DetectIp(req)
-        UserInfo.devcrb = device
+        // UserInfo.devcrb = device
         UserInfo.devirb = userIp
         let EncUserInfo = MainEnc(UserInfo)  //encrypt entire user information
         const accessToken = jwt.sign({ EncUserInfo }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '15hrs' })

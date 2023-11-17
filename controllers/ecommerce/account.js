@@ -10,15 +10,13 @@ const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 exports.EcommerceUserSignup = asynHandler(async (req, res, next) => {
     //check if email,phone number,username exist
     //check if business name exist in the system
-
-    let userData = req.user;
-    let tenant_id = userData?.tenant_id
+    let {tenant_id} = req?.client
     let { account } = req.body
     let accountData = {
         "username": account.username,
         "email": account.email,
-        "phone": account.phone,
         "phone_number": account.phone_number,
+        "first_name": account.first_name,
         "last_name": account.last_name,
         "password": account.password,
         "is_verified": account.is_verified,
@@ -41,12 +39,10 @@ exports.EcommerceUserSignup = asynHandler(async (req, res, next) => {
 
         //save default address
         let addressPayload = {
-            address_type: account.address_type,
             customer_id: accountSavedData.customer_id,
             street_address: account?.address_line1,
             is_default: true,
             city: account.city,
-            state_province: account.state_province,
             postal_code: account.postal_code,
             country: account.country,
 
@@ -105,23 +101,23 @@ exports.PasswordReset = asynHandler(async (req, res, next) => {
     let email = req.body.email;
     const salt = await bcyrpt.genSalt(10);
     let payload = req.body
-  
+
     let newPayload = {
-      password: await bcyrpt.hash(payload.password, salt),
-      updatedAt: req.date,
-      resetPeriod: null,
-      resetToken: null
+        password: await bcyrpt.hash(payload.password, salt),
+        updatedAt: req.date,
+        resetPeriod: null,
+        resetToken: null
     }
-  
+
     let result = await GlobalModel.Update('users', newPayload, 'userId', user.userId);
-  
+
     if (result.affectedRows === 1) {
-      CatchHistory({ api_response: `Password has been changed successfully for ${email}`, function_name: 'ActivateAccount', date_started: req.date, sql_action: "UPDATE", event: "User Account Activate", actor: email }, req)
-      return sendResponse(res, 1, 200, 'Password has been changed successfully')
-  
+        CatchHistory({ api_response: `Password has been changed successfully for ${email}`, function_name: 'ActivateAccount', date_started: req.date, sql_action: "UPDATE", event: "User Account Activate", actor: email }, req)
+        return sendResponse(res, 1, 200, 'Password has been changed successfully')
+
     } else {
-      CatchHistory({ api_response: `Failed to update record or save new password for  :${email}`, function_name: 'ActivateAccount', date_started: req.date, sql_action: "UPDATE", event: "User Account Activate", actor: email }, req)
-      return sendResponse(res, 0, 200, 'Failed to save new password, please try again later')
+        CatchHistory({ api_response: `Failed to update record or save new password for  :${email}`, function_name: 'ActivateAccount', date_started: req.date, sql_action: "UPDATE", event: "User Account Activate", actor: email }, req)
+        return sendResponse(res, 0, 200, 'Failed to save new password, please try again later')
     }
-  
-  })
+
+})

@@ -9,7 +9,7 @@ dotenv.config({ path: "./config/config.env" });
 const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 exports.protect = asynHandler(async (req, res, next) => {
 
-    let device = await DetectDevice(req.headers['user-agent'], req)
+    // let device = await DetectDevice(req.headers['user-agent'], req)
     let userIp = DetectIp(req)
     let token;
     if (
@@ -34,14 +34,14 @@ exports.protect = asynHandler(async (req, res, next) => {
         let decryptToken = MainDec(tokenInfo)
 
         let checkIp = decryptToken?.devirb
-        let checkDevice = decryptToken?.devcrb
+        // let checkDevice = decryptToken?.devcrb
         if (checkIp === userIp) {
 
             // if (checkIp === userIp && checkDevice === device) {
             req.user = decryptToken;
             return next()
         } else {
-            console.log('DeviceCheck =', checkDevice === device);
+            // console.log('DeviceCheck =', checkDevice === device);
             console.log('IPCheck =', checkIp === userIp);
             console.log('User want to bypass, but access denied');
             CatchHistory({ api_response: `User login failed: device or ip mismatch`, function_name: 'protect-middleware', date_started: systemDate, sql_action: "", event: "Middleware to protect routes", actor: '' }, req)

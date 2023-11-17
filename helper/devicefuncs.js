@@ -40,7 +40,9 @@ module.exports = {
     MainDec: (obj) => { //decrypt device information and ip
         // Create a decryptor:
         var encryptor = require('simple-encryptor')("process.env.MainEncKey");
-        var objDec = encryptor.decrypt(obj?.replace(/^["'](.+(?=["']$))["']$/, '$1'));
+        // var objDec = encryptor.decrypt(obj?.replace(/^["'](.+(?=["']$))["']$/, '$1'));
+
+        var objDec = encryptor.decrypt(obj);
 
         // Should print correct result:
         return objDec
