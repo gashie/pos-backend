@@ -3,7 +3,7 @@ const router = express.Router();
 const { userLogin } = require('../middleware/validator')
 const { protect } = require('../middleware/auth')
 
-const { accountExist, alreadyAssigned, supplierExist, brandExist, catExist, productExist, findProduct, findExistingStock, findExistingBeforeSell, findOutlet, findTransfer, findExistingBeforePickup, findTransferNotApproved, unPaidCreditOrder, allowEcommerce } = require('../middleware/isexist')
+const { accountExist, alreadyAssigned, supplierExist, brandExist, catExist, productExist, findProduct, findExistingStock, findExistingBeforeSell, findOutlet, findTransfer, findExistingBeforePickup, findTransferNotApproved, unPaidCreditOrder, allowEcommerce, verifyMainBeforeSwitch } = require('../middleware/isexist')
 const { tenantExist } = require('../middleware/tenant')
 
 
@@ -18,7 +18,7 @@ const {
    Auth, Logout, VerifyUser
 } = require("../controllers/pos/auth");
 //SHOP CONTROLLER
-const { CreateShop, ViewTenantShops, UpdateShop, AssignToShop, CreateEcommerceShop } = require("../controllers/pos/shop");
+const { CreateShop, ViewTenantShops, UpdateShop, AssignToShop, CreateEcommerceShop, ViewTenantMainShop, SwitchMainOutlet } = require("../controllers/pos/shop");
 const { CreateSupplier, UpdateSupplier, ViewTenantSupplier } = require("../controllers/pos/supplier");
 const { CreateBrand, ViewTenantBrand, UpdateBrand } = require("../controllers/pos/brand");
 const { CreateItemUnit, ViewItemUnit, UpdateItemUnit } = require("../controllers/pos/units");
@@ -61,6 +61,8 @@ router.route("/addshop").post(protect,CreateShop);
 router.route("/addecommerce").post(protect,allowEcommerce,CreateEcommerceShop);
 router.route("/assigntoshop").post(protect,alreadyAssigned,AssignToShop);
 router.route("/viewshops").post(protect, ViewTenantShops);
+router.route("/switch_outlet_view").post(protect, ViewTenantMainShop);
+router.route("/switch_outlet_setup").post(protect,verifyMainBeforeSwitch, SwitchMainOutlet);
 router.route("/updateshop").post(protect, UpdateShop);
 
 //supplier

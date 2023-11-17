@@ -46,19 +46,22 @@ exports.Auth = asynHandler(async (req, res) => {
     let UserInfo = {
         id: UserDbInfo.user_id,
         tenant_id: UserDbInfo.tenant_id,
-        company:UserDbInfo.tenant_name,
+        company: UserDbInfo.tenant_name,
         username: UserDbInfo.username,
         name: UserDbInfo.first_name + ' ' + UserDbInfo.last_name,
         email: UserDbInfo.email,
         role: UserDbInfo.role,
-        default_outlet_id:findmyshop.rows[0].outlet_id,
-        default_role:findmyshop.rows[0].role,
-        subscription_type:UserDbInfo.subscription_type,
-        has_electronic:UserDbInfo.has_electronic
+        default_outlet_id: findmyshop.rows[0].outlet_id,
+        default_role: findmyshop.rows[0].role,
+        subscription_type: UserDbInfo.subscription_type,
 
     }
 
-    console.log(UserInfo);
+    if (UserInfo.role === 'Manager') {
+        UserInfo.has_electronic = UserDbInfo.has_electronic,
+            UserInfo.show_electronic_popup = UserDbInfo.show_electronic_popup
+    }
+
     CatchHistory({ payload: JSON.stringify({ username }), api_response: "User logged in", function_name: 'Auth', date_started: systemDate, sql_action: "SELECT", event: "User Authentication", actor: username }, req)
     return sendCookie(UserInfo, 1, 200, res, req)
 })
@@ -66,13 +69,13 @@ exports.Auth = asynHandler(async (req, res) => {
 
 exports.VerifyUser = asynHandler(async (req, res, next) => {
     let userData = req.user;
-    CatchHistory({  api_response: "User is verified", function_name: 'VerifyUser', date_started: systemDate, sql_action: "SELECT", event: "Get User Info", actor: userData.id }, req)
+    CatchHistory({ api_response: "User is verified", function_name: 'VerifyUser', date_started: systemDate, sql_action: "SELECT", event: "Get User Info", actor: userData.id }, req)
 
     return sendResponse(res, 1, 200, "Loggedin", userData)
 });
 
 
 exports.Logout = asynHandler(async (req, res, next) => {
-    CatchHistory({  api_response: "User is logged out", function_name: 'Logout', date_started: systemDate, sql_action: "SELECT", event: "Logout", actor: req.user.id }, req)
+    CatchHistory({ api_response: "User is logged out", function_name: 'Logout', date_started: systemDate, sql_action: "SELECT", event: "Logout", actor: req.user.id }, req)
     return clearResponse(req, res)
 });
