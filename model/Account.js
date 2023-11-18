@@ -14,7 +14,7 @@ shopdb.ValidateDynamicValue = (variable, value) => {
             return resolve(results);
         });
     });
-}; 
+};
 
 shopdb.auth = (username) => {
     return new Promise((resolve, reject) => {
@@ -29,6 +29,25 @@ shopdb.auth = (username) => {
                   account userinfo
                   INNER JOIN tenants tenant ON userinfo.tenant_id  = tenant.tenant_id
                   WHERE userinfo.username = $1
+            `
+
+            , [username], (err, results) => {
+                if (err) {
+                    logger.error(err);
+                    return reject(err);
+                }
+
+                return resolve(results);
+            });
+    });
+};
+shopdb.CustomerAuth = (username) => {
+    return new Promise((resolve, reject) => {
+        pool.query(
+
+            `SELECT *
+            FROM customers
+            WHERE username = $1 OR email = $1
             `
 
             , [username], (err, results) => {

@@ -1,23 +1,27 @@
 const express = require("express");
 const router = express.Router();
 const { userLogin } = require('../middleware/validator')
-const { protect } = require('../middleware/auth')
+const { protect, protectCustomer } = require('../middleware/auth')
 
 const { accountExist} = require('../middleware/isexist')
 const { tenantExist } = require('../middleware/tenant')
 
 
 
-//TENANT CONTROLLER
+//Customer CONTROLLER
 const {
-   EcommerceUserSignup, UpdatEcommerceUser
+   EcommerceUserSignup,
 } = require("../controllers/ecommerce/account");
+const {
+   UpdateCustomerProfile,
+} = require("../controllers/ecommerce/profile");
 const { protectOutlet } = require("../middleware/validate_api_keys");
 
-//TENANT AUTH CONTROLLER
-// const {
-//    Auth, Logout, VerifyUser
-// } = require("../controllers/ecom/auth");
+//Customer AUTH CONTROLLER
+const {
+   EcommerceCustomerAuth, Logout, VerifyUser
+} = require("../controllers/ecommerce/auth");
+const { ViewEcommerceCategory } = require("../controllers/ecommerce/category");
 
 //routes
 router.route("/ecommerce/signup").post(protectOutlet,EcommerceUserSignup);
@@ -25,9 +29,16 @@ router.route("/ecommerce/signup").post(protectOutlet,EcommerceUserSignup);
 
 
 //user login auth
-// router.route("/login").post(userLogin, Auth);
-// router.route("/auth").post(protect, VerifyUser);
+router.route("/ecommerce/login").post(protectOutlet, EcommerceCustomerAuth);
+ router.route("/ecommerce/auth").post(protectOutlet,protectCustomer, VerifyUser);
 // router.route("/logout").post(protect, Logout);
+
+
+//profile
+router.route("/ecommerce/update_profile").post(protectOutlet,protectCustomer, UpdateCustomerProfile);
+
+//category
+router.route("/ecommerce/categories").post(protectOutlet,protectCustomer, ViewEcommerceCategory);
 
 
 

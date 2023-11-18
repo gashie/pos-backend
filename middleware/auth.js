@@ -55,3 +55,51 @@ exports.protect = asynHandler(async (req, res, next) => {
         return sendResponse(res, 0, 401, 'Sorry Login not successful')
     }
 });
+
+exports.protectCustomer = asynHandler(async (req, res, next) => {
+
+    let userIp = DetectIp(req)
+    let token;
+    if (
+        req.headers.authorization &&
+        req.headers.authorization.startsWith("Bearer")
+    ) {
+        token = req.headers.authorization.split(" ")[1];
+    } else if (req?.cookies?.cid) {
+        token = req?.cookies?.cid;
+    }
+    //make sure token exists
+    if (!token) {
+        console.log('no token');
+        CatchHistory({ api_response: `User login failed: no token present`, function_name: 'protectCustomer-middleware', date_started: systemDate, sql_action: "", event: "Middleware to protect routes", actor: '' }, req)
+        return sendResponse(res, 0, 401, 'Sorry Login not successful')
+    }
+
+    try {
+        //Verify token
+        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+        let tokenInfo = decoded.EncUserInfo
+        let decryptToken = MainDec(tokenInfo)
+
+        let checkIp = decryptToken?.devirb
+        // let checkDevice = decryptToken?.devcrb
+        if (checkIp === userIp) {
+
+            // if (checkIp === userIp && checkDevice === device) {
+            req.user = decryptToken;
+            return next()
+        } else {
+            // console.log('DeviceCheck =', checkDevice === device);
+            console.log('IPCheck =', checkIp === userIp);
+            console.log('User want to bypass, but access denied');
+            CatchHistory({ api_response: `User login failed: device or ip mismatch`, function_name: 'protectCustomer-middleware', date_started: systemDate, sql_action: "", event: "Middleware to protect routes", actor: '' }, req)
+            return sendResponse(res, 0, 401, 'Sorry Login not successful')
+
+
+        }
+
+    } catch (error) {
+        CatchHistory({ api_response: `User login failed: invalid token or token has expired`, function_name: 'protectCustomer-middleware', date_started: systemDate, sql_action: "", event: "Middleware to protect routes", actor: '' }, req)
+        return sendResponse(res, 0, 401, 'Sorry Login not successful')
+    }
+});
