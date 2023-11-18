@@ -22,6 +22,7 @@ const {
    EcommerceCustomerAuth, Logout, VerifyUser
 } = require("../controllers/ecommerce/auth");
 const { ViewEcommerceCategory } = require("../controllers/ecommerce/category");
+const { ViewEcommerceProduct } = require("../controllers/ecommerce/product");
 
 //routes
 router.route("/ecommerce/signup").post(protectOutlet,EcommerceUserSignup);
@@ -39,6 +40,9 @@ router.route("/ecommerce/update_profile").post(protectOutlet,protectCustomer, Up
 
 //category
 router.route("/ecommerce/categories").post(protectOutlet,protectCustomer, ViewEcommerceCategory);
+
+//products
+router.route("/ecommerce/items").post(protectOutlet,protectCustomer, ViewEcommerceProduct);
 
 
 
