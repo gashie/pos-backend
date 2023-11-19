@@ -10,10 +10,7 @@ const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 exports.ViewEcommerceProduct = asynHandler(async (req, res, next) => {
     let userData = req.user;
     let {tenant_id,outlet_id} = req?.client
-
-    console.log('====================================');
-    console.log({tenant_id,outlet_id});
-    console.log('====================================');
+    
     let results = await ProductModel.FindOutletProductByOutletId(outlet_id,tenant_id);
     if (results.rows.length == 0) {
         return sendResponse(res, 0, 200, "Sorry, No Record Found", [])

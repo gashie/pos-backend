@@ -143,10 +143,10 @@ shopdb.ProductSummariesReport = (tenant_id) => {
         pool.query(`
         SELECT
             COUNT(DISTINCT oi.product_id) AS unique_product_count,
-            (SELECT COUNT(*) FROM product) AS total_product_count,
-            (SELECT SUM(prod_price) FROM product) AS total_retail_value,
-            (SELECT SUM(wholesale_price) FROM product) AS total_wholesale_value,
-            (SELECT SUM(cos_price) FROM product) AS total_inventory_cost
+            (SELECT COUNT(*) FROM product WHERE tenant_id = $1) AS total_product_count,
+            (SELECT SUM(prod_price) FROM product WHERE tenant_id = $1) AS total_retail_value,
+            (SELECT SUM(wholesale_price) FROM product WHERE tenant_id = $1) AS total_wholesale_value,
+            (SELECT SUM(cos_price) FROM product WHERE tenant_id = $1) AS total_inventory_cost
         FROM
             outlet_inventory AS oi
         
