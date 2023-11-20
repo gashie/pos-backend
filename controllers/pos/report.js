@@ -1,7 +1,7 @@
 const asynHandler = require("../../middleware/async");
 const { sendResponse, CatchHistory } = require("../../helper/utilfunc");
 const GlobalModel = require("../../model/Global");
-const { IncomeAndExpenseCombined, IncomeReport, ExpenseReport, ProductSummariesReport, ProductListReport, CategorySalesReport, SalesProfitCharges, EmployeePerformanceReport, ProfitMarginsReport, OverheadExpenseReport, CheckReorderReport, CheckReorderByOutletReport } = require("../../model/Reporting");
+const { IncomeAndExpenseCombined, IncomeReport, ExpenseReport, ProductSummariesReport, ProductListReport, CategorySalesReport, SalesProfitCharges, EmployeePerformanceReport, ProfitMarginsReport, OverheadExpenseReport, CheckReorderReport, CheckReorderByOutletReport, OutletSummariesReport } = require("../../model/Reporting");
 const { ProfitByOutletByDate } = require("../../model/Order");
 const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 
@@ -57,6 +57,21 @@ exports.ProductReport = asynHandler(async (req, res, next) => {
         CatchHistory({ api_response: `User with ${userData.id} viewed ${results.rows.length} income and expense combined report`, function_name: 'ProductReport/summaries/productlist', date_started: systemDate, sql_action: "SELECT", event: "View products report", actor: userData.id }, req)
 
         return sendResponse(res, 1, 200, "Record Found", {summaries: results.rows, products:products.rows})
+
+
+
+})
+exports.OutletInventoryReport = asynHandler(async (req, res, next) => {
+  let userData = req.user;
+  let tenant_id = userData?.tenant_id
+
+
+      let results = await OutletSummariesReport(tenant_id);
+      let products = await ProductListReport(tenant_id);
+ 
+      CatchHistory({ api_response: `User with ${userData.id} viewed ${results.rows.length} income and expense combined report`, function_name: 'ProductReport/summaries/productlist', date_started: systemDate, sql_action: "SELECT", event: "View products report", actor: userData.id }, req)
+
+      return sendResponse(res, 1, 200, "Record Found", {summaries: results.rows, products:products.rows})
 
 
 

@@ -161,6 +161,38 @@ shopdb.ProductSummariesReport = (tenant_id) => {
         });
     });
 };
+shopdb.OutletSummariesReport = (tenant_id) => {
+    return new Promise((resolve, reject) => {
+        pool.query(`
+        SELECT
+        o.outlet_id,
+        o.outlet_name,
+        COUNT(DISTINCT oi.product_id) AS unique_product_count,
+        COUNT(DISTINCT p.product_id) AS total_product_count,
+        SUM(p.prod_price * oi.stock_quantity) AS total_retail_value,
+        SUM(p.wholesale_price * oi.stock_quantity) AS total_wholesale_value,
+        SUM(p.cos_price * oi.stock_quantity) AS total_inventory_cost
+    FROM
+        outlet_inventory AS oi
+    JOIN
+        product AS p ON oi.product_id = p.product_id
+    JOIN
+        outlet AS o ON oi.outlet_id = o.outlet_id
+    WHERE
+        oi.tenant_id = $1
+    GROUP BY
+        o.outlet_id, o.outlet_name;
+    
+    `, [tenant_id], (err, results) => {
+            if (err) {
+                logger.error(err);
+                return reject(err);
+            }
+
+            return resolve(results);
+        });
+    });
+};
 shopdb.ProductOutletInventoryProfitReport = (tenant_id) => {
     return new Promise((resolve, reject) => {
         pool.query(`
