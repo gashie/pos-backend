@@ -437,45 +437,50 @@ shopdb.CheckReorderReport = (tenant_id) => {
         pool.query(`
 
         WITH ProductStock AS (
-                    SELECT
-                        oi.product_id,
-                        p.prod_name,
-                        oi.min_stock_threshold,
-                        oi.max_stock_threshold,
-                        MAX(oi.stock_quantity) AS total_quantity_sold,
-                        MAX(oi.stock_quantity) AS current_stock
-                    FROM
-                        outlet_inventory AS oi
-                    LEFT JOIN
-                        product AS p
-                    ON
-                        oi.product_id = p.product_id
-                    LEFT JOIN
-                        orders AS o
-                    ON
-                        oi.outlet_id = o.outlet_id
-                        AND oi.product_id = p.product_id
-                        AND o.status = 'complete'
-                        AND o.tenant_id = oi.tenant_id  -- Ensure tenant_id match
-                    WHERE
-                        oi.tenant_id = $1
-                    GROUP BY
-                        oi.product_id, p.prod_name, oi.min_stock_threshold, oi.max_stock_threshold
-                )
-                SELECT
-                    product_id,
-                    prod_name,
-                    min_stock_threshold,
-                    max_stock_threshold,
-                    current_stock,
-                    total_quantity_sold,
-                    CASE
-                        WHEN current_stock < min_stock_threshold THEN 'Reorder Required'
-                        WHEN current_stock >= min_stock_threshold AND current_stock <= max_stock_threshold THEN 'Stock Level OK'
-                        ELSE 'Overstocked'
-                    END AS stock_status
-                FROM
-                    ProductStock;
+            SELECT
+                oi.product_id,
+                p.prod_name,
+                oi.min_stock_threshold,
+                oi.max_stock_threshold,
+                MAX(oi.stock_quantity) AS current_stock,
+                SUM(ot.quantity) AS total_quantity_sold
+            FROM
+                outlet_inventory AS oi
+            LEFT JOIN
+                product AS p
+            ON
+                oi.product_id = p.product_id
+            LEFT JOIN
+                orders AS o
+            ON
+                oi.outlet_id = o.outlet_id
+                AND oi.product_id = p.product_id
+               
+                AND o.tenant_id = oi.tenant_id  -- Ensure tenant_id match
+            LEFT JOIN
+                order_items AS ot
+            ON
+                o.order_id = ot.order_id
+                AND ot.product_id = oi.product_id
+            WHERE
+                oi.tenant_id = $1
+            GROUP BY
+                oi.product_id, p.prod_name, oi.min_stock_threshold, oi.max_stock_threshold
+        )
+        SELECT
+            product_id,
+            prod_name,
+            min_stock_threshold,
+            max_stock_threshold,
+            current_stock,
+            total_quantity_sold,
+            CASE
+                WHEN current_stock < min_stock_threshold THEN 'Reorder Required'
+                WHEN current_stock >= min_stock_threshold AND current_stock <= max_stock_threshold THEN 'Stock Level OK'
+                ELSE 'Overstocked'
+            END AS stock_status
+        FROM
+            ProductStock;
                 
         `, [tenant_id], (err, results) => {
             if (err) {
