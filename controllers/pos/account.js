@@ -1,6 +1,6 @@
 const asynHandler = require("../../middleware/async");
 const bcyrpt = require("bcrypt");
-
+const Model = require("../../model/Account")
 const { sendResponse, CatchHistory } = require("../../helper/utilfunc");
 const GlobalModel = require("../../model/Global");
 const { ShowTenantUsers } = require("../../model/Account");
@@ -125,6 +125,73 @@ exports.UpdateUser = asynHandler(async (req, res, next) => {
     } else {
         CatchHistory({ api_response: `Update failed, please try later-User with id :${userData.id} updated user details`, function_name: 'UpdateUser', date_started: systemDate, sql_action: "UPDATE", event: "Update user profile", actor: userData.id }, req)
         return sendResponse(res, 0, 200, "Update failed, please try later", [])
+    }
+})
+
+exports.PasswordReset = asynHandler(async (req, res, next) => {
+    let userData = req.user;
+    let {email,account_id} = req.body;
+    const salt = await bcyrpt.genSalt(10);
+
+
+    let payload = {
+        password: await bcyrpt.hash(req.body.password, salt),
+        updated_at: systemDate,
+    }
+
+
+    const runupdate = await GlobalModel.Update(payload, 'account', 'account_id', account_id)
+    if (runupdate.rowCount == 1) {
+        CatchHistory({ api_response: `User with id :${userData.id} updated user password`, function_name: 'PasswordReset', date_started: systemDate, sql_action: "UPDATE", event: "Update User password", actor: userData.id }, req)
+        return sendResponse(res, 1, 200, "Record Updated",runupdate.rows[0])
+
+
+    } else {
+        CatchHistory({ api_response: `Update failed, please try later-User with id :${userData.id} updated user password`, function_name: 'PasswordReset', date_started: systemDate, sql_action: "UPDATE", event: "Update user password", actor: userData.id }, req)
+        return sendResponse(res, 0, 200, "Update failed, please try later", [])
+    }
+
+})
+
+exports.ResetInAppPassword = asynHandler(async (req, res) => {
+    let userData = req.user.userInfo;
+    const { password, newPassword,account_id } = req.body
+
+    const foundUser = await Model.auth(username)
+    let UserDbInfo = foundUser.rows[0]
+
+    if (!UserDbInfo) {
+        CatchHistory({ payload: JSON.stringify({ username }), api_response: "Unauthorized access-username not in database", function_name: 'Auth', date_started: systemDate, sql_action: "SELECT", event: "User Authentication", actor: username }, req)
+        return sendResponse(res, 0, 401, 'Unauthorized access')
+
+    }
+
+
+
+
+    //check for password
+    const match = await bcyrpt.compare(password, UserDbInfo.password)
+
+    if (!match) {
+        CatchHistory({ payload: JSON.stringify({ username }), api_response: "Unauthorized access-user exist but password does not match", function_name: 'Auth', date_started: systemDate, sql_action: "SELECT", event: "User Authentication", actor: username }, req)
+        return sendResponse(res, 0, 401, 'Unauthorized access')
+    }
+    const salt = await bcyrpt.genSalt(10);
+
+    let newPayload = {
+        password: await bcyrpt.hash(newPassword, salt),
+        updated_at: systemDate,
+    }
+
+    const runupdate = await GlobalModel.Update(newPayload, 'account', 'account_id', account_id)
+    if (runupdate.rowCount == 1) {
+        CatchHistory({ api_response: `User with id :${userData.id} updated user password`, function_name: 'PasswordReset', date_started: systemDate, sql_action: "UPDATE", event: "Update User password", actor: userData.id }, req)
+        return sendResponse(res, 1, 200, "Record Updated",runupdate.rows[0])
+
+
+    } else {
+        CatchHistory({ api_response: `Update failed, please try later-User with id :${userData.id} updated user password`, function_name: 'PasswordReset', date_started: systemDate, sql_action: "UPDATE", event: "Update user password", actor: userData.id }, req)
+       
     }
 })
 exports.ViewTenantUsers = asynHandler(async (req, res, next) => {

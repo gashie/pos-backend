@@ -10,7 +10,7 @@ const { tenantExist } = require('../middleware/tenant')
 
 //TENANT CONTROLLER
 const {
-   TenantSignup, ViewTenantUsers, UserSignup, UpdateUser
+   TenantSignup, ViewTenantUsers, UserSignup, UpdateUser, ResetInAppPassword
 } = require("../controllers/pos/account");
 
 //TENANT AUTH CONTROLLER
@@ -47,6 +47,7 @@ router.route("/tenantsignup").post(accountExist, tenantExist, TenantSignup);
 router.route("/viewusers").post(protect,ViewTenantUsers);
 router.route("/createuser").post(protect,UserSignup);
 router.route("/updateuser").post(protect,UpdateUser);
+router.route("/resetinapppassword").post(protect,ResetInAppPassword);
 
 
 
