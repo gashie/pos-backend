@@ -113,8 +113,6 @@ exports.UpdateUser = asynHandler(async (req, res, next) => {
         "role": account.role,
         "first_name": account.first_name,
         "last_name": account.last_name,
-        "is_verified": account.is_verified,
-        "is_active": account.is_active,
     }
     payload.updated_at = systemDate
 
