@@ -23,6 +23,46 @@ CREATE TABLE IF NOT EXISTS public.account
     CONSTRAINT uniqueuser UNIQUE (username, email, phone)
 );
 
+CREATE TABLE IF NOT EXISTS public.bank_accounts
+(
+    bank_account_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    bank_id uuid NOT NULL,
+    account_number numeric,
+    account_name character varying(350) COLLATE pg_catalog."default",
+    branch_name character varying(250) COLLATE pg_catalog."default",
+    branch_sort_code numeric,
+    employee_id uuid,
+    tenant_id uuid,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone,
+    is_deleted boolean DEFAULT false,
+    CONSTRAINT bank_accounts_pkey PRIMARY KEY (bank_account_id),
+    CONSTRAINT bank_accounts_account_number_account_name_account_id_key UNIQUE (account_number)
+        INCLUDE(account_name, employee_id),
+    CONSTRAINT checkaccountname UNIQUE (account_name)
+);
+
+CREATE TABLE IF NOT EXISTS public.banks
+(
+    bank_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    bank_name character varying(250) COLLATE pg_catalog."default" NOT NULL,
+    slug character varying(200) COLLATE pg_catalog."default",
+    code character varying(100) COLLATE pg_catalog."default",
+    long_code character varying(150) COLLATE pg_catalog."default",
+    gateway text COLLATE pg_catalog."default",
+    active boolean DEFAULT false,
+    is_deleted boolean DEFAULT false,
+    country character varying(300) COLLATE pg_catalog."default",
+    bank_type character varying(200) COLLATE pg_catalog."default",
+    created_at time without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone,
+    CONSTRAINT banks_pkey PRIMARY KEY (bank_id),
+    CONSTRAINT banks_bank_name_code_long_code_key UNIQUE (bank_name)
+        INCLUDE(code, long_code),
+    CONSTRAINT checkbankcode UNIQUE (code),
+    CONSTRAINT checkbanklongcode UNIQUE (long_code)
+);
+
 CREATE TABLE IF NOT EXISTS public.brands
 (
     brand_id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -30,6 +70,9 @@ CREATE TABLE IF NOT EXISTS public.brands
     description text COLLATE pg_catalog."default",
     origin_country character varying(100) COLLATE pg_catalog."default",
     website_url character varying(255) COLLATE pg_catalog."default",
+    tenant_id uuid,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone,
     CONSTRAINT brands_pkey PRIMARY KEY (brand_id)
 );
 
@@ -37,9 +80,81 @@ CREATE TABLE IF NOT EXISTS public.categories
 (
     category_id uuid NOT NULL DEFAULT gen_random_uuid(),
     category_name character varying(255) COLLATE pg_catalog."default" NOT NULL,
-    parent_category_id uuid,
     description text COLLATE pg_catalog."default",
+    cat_image character varying(300) COLLATE pg_catalog."default",
+    tenant_id uuid,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone,
     CONSTRAINT categories_pkey PRIMARY KEY (category_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.consignment
+(
+    consignment_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    transfer_id uuid NOT NULL,
+    product_id uuid NOT NULL,
+    quantity integer NOT NULL,
+    tenant_id uuid,
+    outlet_id uuid,
+    picked_up_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    picked_up_by uuid,
+    CONSTRAINT consignment_pkey PRIMARY KEY (consignment_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.coupon
+(
+    coupon_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    promotion_id uuid,
+    coupon_code character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    is_used boolean NOT NULL DEFAULT false,
+    CONSTRAINT coupon_pkey PRIMARY KEY (coupon_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.credit_history
+(
+    credit_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    customer_id uuid NOT NULL,
+    order_id uuid,
+    total_amount_paid numeric(13, 2),
+    total_amount_due numeric(13, 2),
+    total_amount_remaining numeric(13, 2),
+    transaction_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    expected_payment_date date,
+    tenant_id uuid,
+    outlet_id uuid,
+    recorded_by uuid,
+    remarks text COLLATE pg_catalog."default",
+    last_payment_date timestamp without time zone,
+    complete_credit boolean DEFAULT false,
+    CONSTRAINT credit_history_pkey PRIMARY KEY (credit_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.credit_payments
+(
+    payment_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    customer_id uuid NOT NULL,
+    outlet_id uuid NOT NULL,
+    payment_date date NOT NULL DEFAULT CURRENT_DATE,
+    amount numeric(13, 2) NOT NULL,
+    notes text COLLATE pg_catalog."default",
+    is_completed boolean NOT NULL DEFAULT false,
+    payment_method character varying(50) COLLATE pg_catalog."default",
+    order_reference character varying(50) COLLATE pg_catalog."default",
+    receipt_image_url character varying(255) COLLATE pg_catalog."default",
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone,
+    order_id uuid,
+    next_payment_date date,
+    balance numeric(13, 2),
+    CONSTRAINT outlet_credit_payments_pkey PRIMARY KEY (payment_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.customer_promotion_usage
+(
+    customer_id uuid,
+    promotion_id uuid,
+    coupon_id uuid,
+    usage_date timestamp without time zone DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS public.customers
@@ -49,15 +164,189 @@ CREATE TABLE IF NOT EXISTS public.customers
     last_name character varying(100) COLLATE pg_catalog."default",
     email character varying(255) COLLATE pg_catalog."default" NOT NULL,
     phone_number character varying(20) COLLATE pg_catalog."default",
-    address_line1 character varying(255) COLLATE pg_catalog."default",
-    address_line2 character varying(255) COLLATE pg_catalog."default",
+    address_line1 character varying(300) COLLATE pg_catalog."default",
     city character varying(100) COLLATE pg_catalog."default",
     state_province character varying(100) COLLATE pg_catalog."default",
     postal_code character varying(20) COLLATE pg_catalog."default",
     country character varying(100) COLLATE pg_catalog."default",
-    registration_date date,
+    preferred_contact_method character varying(60) COLLATE pg_catalog."default",
+    additional_info text COLLATE pg_catalog."default",
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone,
+    tenant_id uuid,
+    username character varying(200) COLLATE pg_catalog."default",
+    is_verified boolean DEFAULT false,
+    is_active boolean DEFAULT false,
+    password character varying(300) COLLATE pg_catalog."default",
     CONSTRAINT customers_pkey PRIMARY KEY (customer_id),
-    CONSTRAINT customers_email_key UNIQUE (email)
+    CONSTRAINT customers_email_key UNIQUE (email),
+    CONSTRAINT customers_phone_number UNIQUE (phone_number),
+    CONSTRAINT customers_username_key UNIQUE (username)
+);
+
+CREATE TABLE IF NOT EXISTS public.ecommerce_addresses
+(
+    address_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    customer_id uuid,
+    street_address character varying(300) COLLATE pg_catalog."default" NOT NULL,
+    city character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    state character varying(100) COLLATE pg_catalog."default",
+    postal_code character varying(15) COLLATE pg_catalog."default" NOT NULL,
+    country character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    is_default boolean DEFAULT false,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone,
+    CONSTRAINT ecommerce_addresses_pkey PRIMARY KEY (address_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.expense_category
+(
+    category_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    category_name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    description text COLLATE pg_catalog."default",
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone,
+    created_by uuid,
+    tenant_id uuid,
+    CONSTRAINT expense_category_pkey PRIMARY KEY (category_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.expenses
+(
+    expense_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    description text COLLATE pg_catalog."default",
+    amount numeric(13, 2) NOT NULL,
+    transaction_date date NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone,
+    created_by uuid,
+    tenant_id uuid,
+    expense_category uuid,
+    CONSTRAINT expenses_pkey PRIMARY KEY (expense_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.feedback
+(
+    feedback_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    customer_id uuid,
+    order_id uuid,
+    feedback_text text COLLATE pg_catalog."default" NOT NULL,
+    rating integer,
+    submission_date timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT feedback_pkey PRIMARY KEY (feedback_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.fees
+(
+    charged_percentage numeric(13, 0),
+    charged_amount numeric(13, 2),
+    charged_date timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    paid_status boolean DEFAULT false,
+    oauth character varying(300) COLLATE pg_catalog."default" DEFAULT true
+);
+
+CREATE TABLE IF NOT EXISTS public.fees_charged
+(
+    fees_charged_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    charged_percentage numeric(13, 0),
+    charged_amount numeric(13, 2),
+    order_id uuid,
+    order_paid_status character varying(100) COLLATE pg_catalog."default",
+    tenant_id uuid,
+    charged_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fees_charged_pkey PRIMARY KEY (fees_charged_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.group_band
+(
+    group_band_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    group_band_name character varying(250) COLLATE pg_catalog."default" NOT NULL,
+    band_basic_salary numeric(13, 2),
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone,
+    is_deleted boolean DEFAULT false,
+    tenant_id uuid,
+    CONSTRAINT group_band_pkey PRIMARY KEY (group_band_name)
+);
+
+CREATE TABLE IF NOT EXISTS public.group_band_allowance
+(
+    band_allowance_id uuid DEFAULT gen_random_uuid(),
+    band_allowance_name character varying(250) COLLATE pg_catalog."default",
+    salary_allowance_id uuid,
+    group_band_id uuid,
+    source_bank_account_id uuid,
+    employee_id uuid,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone,
+    is_deleted boolean DEFAULT false
+);
+
+CREATE TABLE IF NOT EXISTS public.group_band_deduction
+(
+    band_deduction_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    band_deduction_name character varying(250) COLLATE pg_catalog."default" NOT NULL,
+    salary_deduction_id uuid,
+    group_band_id uuid,
+    source_type character varying(100) COLLATE pg_catalog."default",
+    deduction_bank_account_id uuid,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone,
+    is_deleted boolean DEFAULT false,
+    tenant_id uuid,
+    source_bank_account_id uuid,
+    CONSTRAINT group_band_deduction_pkey PRIMARY KEY (band_deduction_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.income
+(
+    income_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    description text COLLATE pg_catalog."default",
+    amount numeric(13, 2) NOT NULL,
+    transaction_date date NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone,
+    created_by uuid,
+    tenant_id uuid,
+    income_category uuid,
+    CONSTRAINT income_pkey PRIMARY KEY (income_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.income_category
+(
+    category_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    category_name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    description text COLLATE pg_catalog."default",
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone,
+    created_by uuid,
+    tenant_id uuid,
+    CONSTRAINT income_category_pkey PRIMARY KEY (category_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.inventory
+(
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    product_id uuid NOT NULL,
+    qty numeric NOT NULL,
+    tenant_id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone,
+    deleted_at timestamp with time zone,
+    old_qty numeric,
+    added_by uuid,
+    min_stock_threshold numeric,
+    max_stock_threshold numeric,
+    CONSTRAINT inventory_pkey PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS public.item_unit
+(
+    unit_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    unit_type character varying(20) COLLATE pg_catalog."default" NOT NULL,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone,
+    CONSTRAINT item_unit_pkey PRIMARY KEY (unit_type)
 );
 
 CREATE TABLE IF NOT EXISTS public.order_items
@@ -66,21 +355,135 @@ CREATE TABLE IF NOT EXISTS public.order_items
     order_id uuid NOT NULL,
     product_id uuid NOT NULL,
     quantity integer NOT NULL,
-    unit_price numeric(10, 2) NOT NULL,
-    total_price numeric(10, 2) NOT NULL,
+    unit_price numeric(13, 2) NOT NULL,
+    total_price numeric(13, 2) NOT NULL,
+    outlet_id uuid,
+    tenant_id uuid,
+    processed_by uuid,
+    customer_id uuid,
+    order_date timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT order_items_pkey PRIMARY KEY (order_item_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.order_shipments
+(
+    shipment_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    order_id uuid,
+    customer_address_id uuid,
+    carrier_id uuid,
+    shipment_date date,
+    estimated_delivery_date date,
+    actual_delivery_date date,
+    shipment_status character varying(255) COLLATE pg_catalog."default",
+    tracking_number character varying(255) COLLATE pg_catalog."default",
+    outlet_update character varying(255) COLLATE pg_catalog."default",
+    customer_update character varying(255) COLLATE pg_catalog."default",
+    CONSTRAINT order_shipments_pkey PRIMARY KEY (shipment_id)
 );
 
 CREATE TABLE IF NOT EXISTS public.orders
 (
     order_id uuid NOT NULL DEFAULT gen_random_uuid(),
-    outlet_id uuid NOT NULL,
-    order_date timestamp without time zone NOT NULL,
+    tenant_id uuid NOT NULL,
+    order_date timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
     customer_id uuid NOT NULL,
-    total_amount numeric(10, 2) NOT NULL,
+    total_amount numeric(13, 2) NOT NULL,
     status character varying(50) COLLATE pg_catalog."default" NOT NULL,
     payment_method character varying(50) COLLATE pg_catalog."default",
+    outlet_id uuid,
+    processed_by uuid,
+    notes text COLLATE pg_catalog."default",
+    order_reference character varying(100) COLLATE pg_catalog."default",
+    charge_percentage numeric(13, 0),
+    charge_amount numeric(13, 2),
+    discount_fee numeric(13, 0),
+    cash_received numeric(13, 2),
+    cash_balance numeric(13, 2),
+    to_be_delivered boolean,
+    delivery_address text COLLATE pg_catalog."default",
+    amount_to_pay numeric(13, 2),
+    paid_status character varying(60) COLLATE pg_catalog."default",
+    is_credit boolean DEFAULT false,
+    total_amount_due numeric(13, 2),
+    total_amount_remaining numeric(13, 2),
+    expected_payment_date date,
+    transaction_from character varying(60) COLLATE pg_catalog."default",
     CONSTRAINT orders_pkey PRIMARY KEY (order_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.outlet
+(
+    outlet_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    outlet_name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    tenant_id uuid NOT NULL,
+    is_main_outlet boolean DEFAULT false,
+    outlet_description text COLLATE pg_catalog."default",
+    outlet_address_line1 character varying(255) COLLATE pg_catalog."default",
+    outlet_address_line2 character varying(255) COLLATE pg_catalog."default",
+    outlet_city character varying(100) COLLATE pg_catalog."default",
+    outlet_state_province character varying(100) COLLATE pg_catalog."default",
+    outlet_postal_code character varying(20) COLLATE pg_catalog."default",
+    outlet_country character varying(100) COLLATE pg_catalog."default",
+    outlet_phone character varying(20) COLLATE pg_catalog."default",
+    outlet_email character varying(255) COLLATE pg_catalog."default",
+    opening_hours character varying(255) COLLATE pg_catalog."default",
+    website_url character varying(255) COLLATE pg_catalog."default",
+    created_at timestamp without time zone DEFAULT now(),
+    is_electronic boolean DEFAULT false,
+    updated_at timestamp without time zone,
+    CONSTRAINT shops_pkey PRIMARY KEY (outlet_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.outlet_api_keys
+(
+    api_key_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    outlet_id uuid NOT NULL,
+    api_key text COLLATE pg_catalog."default" NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    tenant_id uuid,
+    CONSTRAINT outlet_api_keys_pkey PRIMARY KEY (api_key_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.outlet_inventory
+(
+    outlet_inventory_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    outlet_id uuid NOT NULL,
+    product_id uuid NOT NULL,
+    stock_quantity integer NOT NULL,
+    min_stock_threshold integer NOT NULL DEFAULT 10,
+    max_stock_threshold integer NOT NULL DEFAULT 20,
+    last_restock_date date,
+    last_stock_transfer_date date,
+    tenant_id uuid,
+    created_at timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    processed_by uuid NOT NULL,
+    transfer_id uuid,
+    CONSTRAINT outlet_inventory_pkey PRIMARY KEY (outlet_inventory_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.product
+(
+    product_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    prod_name character varying(200) COLLATE pg_catalog."default" NOT NULL,
+    prod_desc character varying(500) COLLATE pg_catalog."default",
+    prod_price numeric(13, 2),
+    cos_price numeric(13, 2),
+    prod_pic character varying(500) COLLATE pg_catalog."default",
+    cat_id uuid,
+    prod_qty numeric DEFAULT 0,
+    reorder numeric DEFAULT 10,
+    supplier_id uuid NOT NULL,
+    tenant_id uuid,
+    serial character varying(200) COLLATE pg_catalog."default",
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp with time zone,
+    brand_id uuid,
+    unit_id uuid,
+    pack_name character varying(300) COLLATE pg_catalog."default",
+    retail_price numeric(13, 0),
+    wholesale_price numeric(13, 0),
+    expiry_date date,
+    CONSTRAINT product_pkey PRIMARY KEY (product_id)
 );
 
 CREATE TABLE IF NOT EXISTS public.product_variants
@@ -118,10 +521,75 @@ CREATE TABLE IF NOT EXISTS public.products
     CONSTRAINT products_pkey PRIMARY KEY (product_id)
 );
 
+CREATE TABLE IF NOT EXISTS public.promotion
+(
+    promotion_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    promotion_name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    description text COLLATE pg_catalog."default",
+    start_date date NOT NULL,
+    end_date date NOT NULL,
+    discount_percent numeric(5, 2) NOT NULL,
+    tenant_id uuid NOT NULL,
+    CONSTRAINT promotion_pkey PRIMARY KEY (promotion_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.salary_allowance
+(
+    salary_allowance_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    salary_allowance_name character varying(250) COLLATE pg_catalog."default" NOT NULL,
+    is_taxable boolean DEFAULT false,
+    is_flat_rate boolean DEFAULT false,
+    flat_rate numeric(13, 2),
+    is_percentage_rate boolean DEFAULT false,
+    percentage_rate numeric(13, 2),
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone,
+    is_deleted boolean DEFAULT false,
+    tenant_id uuid,
+    taxable_flat_rate numeric(13, 2),
+    taxable_percentage_rate numeric,
+    CONSTRAINT salary_allowance_pkey PRIMARY KEY (salary_allowance_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.salary_deduction
+(
+    salary_deduction_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    salary_deduction_name character varying(100) COLLATE pg_catalog."default" NOT NULL,
+    is_flat_rate boolean DEFAULT false,
+    flat_rate numeric(13, 2),
+    is_percentage_rate boolean DEFAULT false,
+    percentage_rate numeric,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone,
+    is_deleted boolean DEFAULT false,
+    tenant_id uuid,
+    CONSTRAINT salary_deduction_pkey PRIMARY KEY (salary_deduction_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.shipping_carrier
+(
+    carrier_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    carrier_name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    description text COLLATE pg_catalog."default",
+    CONSTRAINT shipping_carrier_pkey PRIMARY KEY (carrier_id),
+    CONSTRAINT uc_carrier_name UNIQUE (carrier_name)
+);
+
+CREATE TABLE IF NOT EXISTS public.shipping_rate
+(
+    rate_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    carrier_id uuid,
+    zone_name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    min_weight numeric(10, 2) NOT NULL,
+    max_weight numeric(10, 2),
+    rate numeric(10, 2) NOT NULL,
+    CONSTRAINT shipping_rate_pkey PRIMARY KEY (rate_id)
+);
+
 CREATE TABLE IF NOT EXISTS public.shop_inventory
 (
     inventory_id uuid NOT NULL DEFAULT gen_random_uuid(),
-    outlet_id uuid NOT NULL,
+    shop_id uuid NOT NULL,
     product_id uuid NOT NULL,
     stock_quantity integer NOT NULL,
     min_stock_threshold integer NOT NULL,
@@ -141,25 +609,14 @@ CREATE TABLE IF NOT EXISTS public.shop_user_access
     CONSTRAINT shop_user_access_pkey PRIMARY KEY (access_id)
 );
 
-CREATE TABLE IF NOT EXISTS public.shops
+CREATE TABLE IF NOT EXISTS public.shopping_cart
 (
-    outlet_id uuid NOT NULL DEFAULT gen_random_uuid(),
-    shop_name character varying(255) COLLATE pg_catalog."default" NOT NULL,
-    tenant_id uuid NOT NULL,
-    is_main_shop boolean NOT NULL,
-    shop_description text COLLATE pg_catalog."default",
-    shop_address_line1 character varying(255) COLLATE pg_catalog."default",
-    shop_address_line2 character varying(255) COLLATE pg_catalog."default",
-    shop_city character varying(100) COLLATE pg_catalog."default",
-    shop_state_province character varying(100) COLLATE pg_catalog."default",
-    shop_postal_code character varying(20) COLLATE pg_catalog."default",
-    shop_country character varying(100) COLLATE pg_catalog."default",
-    shop_phone character varying(20) COLLATE pg_catalog."default",
-    shop_email character varying(255) COLLATE pg_catalog."default",
-    opening_hours character varying(255) COLLATE pg_catalog."default",
-    website_url character varying(255) COLLATE pg_catalog."default",
-    created_at timestamp without time zone DEFAULT now(),
-    CONSTRAINT shops_pkey PRIMARY KEY (outlet_id)
+    cart_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    customer_id uuid,
+    product_id uuid,
+    quantity integer,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT shopping_cart_pkey PRIMARY KEY (cart_id)
 );
 
 CREATE TABLE IF NOT EXISTS public.suppliers
@@ -176,7 +633,9 @@ CREATE TABLE IF NOT EXISTS public.suppliers
     postal_code character varying(20) COLLATE pg_catalog."default",
     country character varying(100) COLLATE pg_catalog."default",
     website_url character varying(255) COLLATE pg_catalog."default",
-    registration_date date,
+    created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
+    tenant_id uuid,
+    updated_at timestamp with time zone,
     CONSTRAINT suppliers_pkey PRIMARY KEY (supplier_id)
 );
 
@@ -199,7 +658,37 @@ CREATE TABLE IF NOT EXISTS public.tenants
     subscription_expiry_date date,
     is_active boolean NOT NULL DEFAULT true,
     url text COLLATE pg_catalog."default",
+    has_electronic boolean DEFAULT false,
+    show_electronic_popup boolean DEFAULT true,
     CONSTRAINT tenants_pkey PRIMARY KEY (tenant_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.transfer_acknowledgment
+(
+    acknowledgment_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    transfer_id uuid NOT NULL,
+    received_date timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_confirmed boolean NOT NULL DEFAULT false,
+    remarks text COLLATE pg_catalog."default",
+    status character varying(100) COLLATE pg_catalog."default",
+    CONSTRAINT acknowledgment_pkey PRIMARY KEY (acknowledgment_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.transfer_stock
+(
+    transfer_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    source_outlet_id uuid NOT NULL,
+    destination_outlet_id uuid NOT NULL,
+    transfer_date timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    notes text COLLATE pg_catalog."default",
+    is_acknowledged boolean NOT NULL DEFAULT false,
+    ref_code character varying(100) COLLATE pg_catalog."default",
+    reference character varying(100) COLLATE pg_catalog."default",
+    processed_by uuid,
+    tenant_id uuid,
+    transfer_from character varying(100) COLLATE pg_catalog."default",
+    accept_status character varying(600) COLLATE pg_catalog."default",
+    CONSTRAINT transfer_data_pkey PRIMARY KEY (transfer_id)
 );
 
 CREATE TABLE IF NOT EXISTS public.units
@@ -211,6 +700,29 @@ CREATE TABLE IF NOT EXISTS public.units
     CONSTRAINT units_pkey PRIMARY KEY (unit_id)
 );
 
+CREATE TABLE IF NOT EXISTS public.user_group_band
+(
+    user_group_band_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    group_band_id uuid NOT NULL,
+    employee_id uuid NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp without time zone,
+    is_deleted boolean,
+    tenant_id uuid,
+    CONSTRAINT user_group_band_pkey PRIMARY KEY (user_group_band_id),
+    CONSTRAINT user_same_band UNIQUE (group_band_id)
+        INCLUDE(employee_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.wishlist
+(
+    wishlist_id uuid NOT NULL DEFAULT gen_random_uuid(),
+    customer_id uuid,
+    product_id uuid,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT wishlist_pkey PRIMARY KEY (wishlist_id)
+);
+
 ALTER TABLE IF EXISTS public.account
     ADD CONSTRAINT tenantkey FOREIGN KEY (tenant_id)
     REFERENCES public.tenants (tenant_id) MATCH SIMPLE
@@ -218,23 +730,146 @@ ALTER TABLE IF EXISTS public.account
     ON DELETE NO ACTION;
 
 
-ALTER TABLE IF EXISTS public.categories
-    ADD CONSTRAINT categories_parent_category_id_fkey FOREIGN KEY (parent_category_id)
-    REFERENCES public.categories (category_id) MATCH SIMPLE
+ALTER TABLE IF EXISTS public.bank_accounts
+    ADD CONSTRAINT bank_accounts_account_id_fkey FOREIGN KEY (employee_id)
+    REFERENCES public.account (account_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION;
 
 
-ALTER TABLE IF EXISTS public.order_items
-    ADD CONSTRAINT order_items_order_id_fkey FOREIGN KEY (order_id)
+ALTER TABLE IF EXISTS public.bank_accounts
+    ADD CONSTRAINT bank_accounts_bank_id_fkey FOREIGN KEY (bank_id)
+    REFERENCES public.banks (bank_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.bank_accounts
+    ADD CONSTRAINT bank_accounts_tenant_id_fkey FOREIGN KEY (tenant_id)
+    REFERENCES public.tenants (tenant_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.consignment
+    ADD CONSTRAINT consignment_product_id_fkey FOREIGN KEY (product_id)
+    REFERENCES public.product (product_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.consignment
+    ADD CONSTRAINT consignment_transfer_id_fkey FOREIGN KEY (transfer_id)
+    REFERENCES public.transfer_stock (transfer_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.coupon
+    ADD CONSTRAINT fk_promotion FOREIGN KEY (promotion_id)
+    REFERENCES public.promotion (promotion_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.credit_history
+    ADD CONSTRAINT credit_history_customer_id_fkey FOREIGN KEY (customer_id)
+    REFERENCES public.customers (customer_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.credit_history
+    ADD CONSTRAINT credit_history_order_id_fkey FOREIGN KEY (order_id)
     REFERENCES public.orders (order_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION;
 
 
-ALTER TABLE IF EXISTS public.order_items
-    ADD CONSTRAINT order_items_product_id_fkey FOREIGN KEY (product_id)
-    REFERENCES public.products (product_id) MATCH SIMPLE
+ALTER TABLE IF EXISTS public.credit_payments
+    ADD CONSTRAINT outlet_credit_payments_customer_id_fkey FOREIGN KEY (customer_id)
+    REFERENCES public.customers (customer_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+CREATE INDEX IF NOT EXISTS idx_outlet_credit_payments_customer_id
+    ON public.credit_payments(customer_id);
+
+
+ALTER TABLE IF EXISTS public.credit_payments
+    ADD CONSTRAINT outlet_credit_payments_outlet_id_fkey FOREIGN KEY (outlet_id)
+    REFERENCES public.outlet (outlet_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+CREATE INDEX IF NOT EXISTS idx_outlet_credit_payments_outlet_id
+    ON public.credit_payments(outlet_id);
+
+
+ALTER TABLE IF EXISTS public.customer_promotion_usage
+    ADD CONSTRAINT fk_coupon_usage FOREIGN KEY (coupon_id)
+    REFERENCES public.coupon (coupon_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.customer_promotion_usage
+    ADD CONSTRAINT fk_customer FOREIGN KEY (customer_id)
+    REFERENCES public.customers (customer_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.customer_promotion_usage
+    ADD CONSTRAINT fk_promotion_usage FOREIGN KEY (promotion_id)
+    REFERENCES public.promotion (promotion_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.ecommerce_addresses
+    ADD CONSTRAINT ecommerce_addresses_customer_id_fkey FOREIGN KEY (customer_id)
+    REFERENCES public.customers (customer_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.feedback
+    ADD CONSTRAINT feedback_customer_id_fkey FOREIGN KEY (customer_id)
+    REFERENCES public.customers (customer_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.feedback
+    ADD CONSTRAINT fk_feedback_customer FOREIGN KEY (customer_id)
+    REFERENCES public.customers (customer_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.feedback
+    ADD CONSTRAINT fk_feedback_order FOREIGN KEY (order_id)
+    REFERENCES public.orders (order_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.order_shipments
+    ADD CONSTRAINT order_shipments_carrier_id_fkey FOREIGN KEY (carrier_id)
+    REFERENCES public.shipping_carrier (carrier_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.order_shipments
+    ADD CONSTRAINT order_shipments_customer_address_id_fkey FOREIGN KEY (customer_address_id)
+    REFERENCES public.ecommerce_addresses (address_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.order_shipments
+    ADD CONSTRAINT order_shipments_order_id_fkey FOREIGN KEY (order_id)
+    REFERENCES public.orders (order_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION;
 
@@ -246,9 +881,30 @@ ALTER TABLE IF EXISTS public.orders
     ON DELETE NO ACTION;
 
 
-ALTER TABLE IF EXISTS public.orders
-    ADD CONSTRAINT orders_outlet_id_fkey FOREIGN KEY (outlet_id)
-    REFERENCES public.shops (outlet_id) MATCH SIMPLE
+ALTER TABLE IF EXISTS public.outlet
+    ADD CONSTRAINT shops_tenant_id_fkey FOREIGN KEY (tenant_id)
+    REFERENCES public.tenants (tenant_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.outlet_api_keys
+    ADD CONSTRAINT outlet_api_keys_outlet_id_fkey FOREIGN KEY (outlet_id)
+    REFERENCES public.outlet (outlet_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE CASCADE;
+
+
+ALTER TABLE IF EXISTS public.outlet_inventory
+    ADD CONSTRAINT outlet_inventory_outlet_id_fkey FOREIGN KEY (outlet_id)
+    REFERENCES public.outlet (outlet_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.outlet_inventory
+    ADD CONSTRAINT outlet_inventory_product_id_fkey FOREIGN KEY (product_id)
+    REFERENCES public.product (product_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION;
 
@@ -256,6 +912,20 @@ ALTER TABLE IF EXISTS public.orders
 ALTER TABLE IF EXISTS public.product_variants
     ADD CONSTRAINT product_variants_product_id_fkey FOREIGN KEY (product_id)
     REFERENCES public.products (product_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.promotion
+    ADD CONSTRAINT fk_tenant FOREIGN KEY (tenant_id)
+    REFERENCES public.tenants (tenant_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.shipping_rate
+    ADD CONSTRAINT fk_carrier FOREIGN KEY (carrier_id)
+    REFERENCES public.shipping_carrier (carrier_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION;
 
@@ -268,15 +938,15 @@ ALTER TABLE IF EXISTS public.shop_inventory
 
 
 ALTER TABLE IF EXISTS public.shop_inventory
-    ADD CONSTRAINT shop_inventory_outlet_id_fkey FOREIGN KEY (outlet_id)
-    REFERENCES public.shops (outlet_id) MATCH SIMPLE
+    ADD CONSTRAINT shop_inventory_shop_id_fkey FOREIGN KEY (shop_id)
+    REFERENCES public.outlet (outlet_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION;
 
 
 ALTER TABLE IF EXISTS public.shop_user_access
-    ADD CONSTRAINT shop_user_access_outlet_id_fkey FOREIGN KEY (outlet_id)
-    REFERENCES public.shops (outlet_id) MATCH SIMPLE
+    ADD CONSTRAINT shop_user_access_shop_id_fkey FOREIGN KEY (outlet_id)
+    REFERENCES public.outlet (outlet_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION;
 
@@ -288,9 +958,51 @@ ALTER TABLE IF EXISTS public.shop_user_access
     ON DELETE NO ACTION;
 
 
-ALTER TABLE IF EXISTS public.shops
-    ADD CONSTRAINT shops_tenant_id_fkey FOREIGN KEY (tenant_id)
-    REFERENCES public.tenants (tenant_id) MATCH SIMPLE
+ALTER TABLE IF EXISTS public.shopping_cart
+    ADD CONSTRAINT shopping_cart_customer_id_fkey FOREIGN KEY (customer_id)
+    REFERENCES public.customers (customer_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.shopping_cart
+    ADD CONSTRAINT shopping_cart_product_id_fkey FOREIGN KEY (product_id)
+    REFERENCES public.products (product_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.transfer_acknowledgment
+    ADD CONSTRAINT acknowledgment_transfer_id_fkey FOREIGN KEY (transfer_id)
+    REFERENCES public.transfer_stock (transfer_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.transfer_stock
+    ADD CONSTRAINT transfer_data_destination_outlet_id_fkey FOREIGN KEY (destination_outlet_id)
+    REFERENCES public.outlet (outlet_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.transfer_stock
+    ADD CONSTRAINT transfer_data_source_outlet_id_fkey FOREIGN KEY (source_outlet_id)
+    REFERENCES public.outlet (outlet_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.wishlist
+    ADD CONSTRAINT wishlist_customer_id_fkey FOREIGN KEY (customer_id)
+    REFERENCES public.customers (customer_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+
+ALTER TABLE IF EXISTS public.wishlist
+    ADD CONSTRAINT wishlist_product_id_fkey FOREIGN KEY (product_id)
+    REFERENCES public.product (product_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION;
 

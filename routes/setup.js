@@ -40,6 +40,12 @@ const { SendStockToOutlet, ViewStockTransfer, CancelTransfer, PickUpConsignment,
 const { CreateIncomeCategory, ViewTenantIncomeCategory, UpdateIncomeCategory, AddIncomeData, ViewTenantIncomeData, UpdateIncomeData } = require("../controllers/pos/income");
 const { CreateExpensesCategory, ViewTenantExpensesCategory, UpdateExpenseCategory, AddExpenseData, ViewTenantExpenseData, UpdateExpenseData } = require("../controllers/pos/expenses");
 const { IncomeAndExpenseReport, ProductReport, SalesByCategory, SalesAndProfitCharges, ViewEmployeePerformance, ViewProfitMargins, ViewOverheadExpenses, ViewReorderReport, ViewReorderReportByOutlet, ViewProfitPerOutlet, OutletInventoryReport } = require("../controllers/pos/report");
+const { CreateBank, ViewBanks, UpdateBank } = require("../controllers/pos/banks");
+const { CreateBankAccount, ViewBankAccount, UpdateBankAccount } = require("../controllers/pos/bank_account");
+const { CreateGroupBand, ViewGroupBand, UpdateGroupBand } = require("../controllers/pos/group_band");
+const { AssignUserGroupBand, ViewUserAssignedGroupBands, UpdateAssignedGroupBand } = require("../controllers/pos/user_group_band");
+const { CreateSalaryAllowance, ViewSalaryAllowance, UpdateSalaryAllowance } = require("../controllers/pos/salary_allowance");
+const { CreateSalaryDeduction, ViewSalaryDeduction, UpdateSalaryDeduction } = require("../controllers/pos/salary_deduction");
 
 
 //routes
@@ -148,6 +154,46 @@ router.route("/viewoverheadexpenses").post(protect,ViewOverheadExpenses);
 router.route("/viewereoder").post(protect,ViewReorderReport);
 router.route("/viewereoderbyoutlet").post(protect,ViewReorderReportByOutlet);
 router.route("/viewprofitforoutlet").post(protect,ViewProfitPerOutlet);
+
+
+
+
+//***PAYROLL**/
+
+//manage bank
+router.route("/add_bank").post(protect,CreateBank);
+router.route("/view_banks").post(protect,ViewBanks);
+router.route("/update_bank").post(protect,UpdateBank);
+
+//manage bank account
+router.route("/add_bankaccount").post(protect,CreateBankAccount);
+router.route("/view_bankaccount").post(protect,ViewBankAccount);
+router.route("/update_bankaccount").post(protect,UpdateBankAccount);
+
+
+//manage group band
+router.route("/add_groupband").post(protect,CreateGroupBand);
+router.route("/view_groupband").post(protect,ViewGroupBand);
+router.route("/update_groupband").post(protect,UpdateGroupBand);
+
+//manage user assigned band
+router.route("/assigntoband").post(protect,AssignUserGroupBand);
+ router.route("/view_assignedgroupband").post(protect,ViewUserAssignedGroupBands);
+router.route("/update_assignedgroupband").post(protect,UpdateAssignedGroupBand);
+
+
+//manage salary allowance
+router.route("/createallowance").post(protect,CreateSalaryAllowance);
+ router.route("/view_allowance").post(protect,ViewSalaryAllowance);
+router.route("/update_allowance").post(protect,UpdateSalaryAllowance);
+
+//manage salary deduction
+router.route("/creatededuction").post(protect,CreateSalaryDeduction);
+ router.route("/view_deduction").post(protect,ViewSalaryDeduction);
+router.route("/update_deduction").post(protect,UpdateSalaryDeduction);
+
+
+//***PAYROLL**/
 
 //order  routes
 router.route("/sell").post(protect,findExistingBeforeSell,CreateOrder);
