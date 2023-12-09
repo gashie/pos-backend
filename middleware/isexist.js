@@ -116,6 +116,58 @@ exports.findOutlet = asynHandler(async (req, res, next) => {
 
 
 });
+exports.findOutletBeforeAddingProduct = asynHandler(async (req, res, next) => {
+  let userData = req.user;
+  let tenant_id = userData?.tenant_id
+  let { destination_outlet_id, source_outlet_id, transfer_from } = req.body
+
+  const tableName = 'outlet';
+  const columnsToSelect = ['outlet_name']; // Use string values for column names
+  const conditions = [
+    { column: 'outlet_id', operator: '=', value: destination_outlet_id },
+    { column: 'tenant_id', operator: '=', value: tenant_id },
+
+  ];
+  const conditions2 = [
+    { column: 'outlet_id', operator: '=', value: source_outlet_id },
+    { column: 'tenant_id', operator: '=', value: tenant_id },
+
+  ];
+  if (transfer_from === 'warehouse') {
+    let results = await Finder(tableName, columnsToSelect, conditions)
+    let ObjectExist = results.rows[0]
+
+    if (!ObjectExist) {
+      CatchHistory({ payload: JSON.stringify(req.body), api_response: "Sorry, this outlet does not exist", function_name: 'findOutlet', date_started: systemDate, sql_action: "SELECT", event: "find outlet if it exist", actor: userData?.id }, req)
+      return sendResponse(res, 0, 200, 'Sorry, this outlet does not exist')
+    }
+    req.outlet = ObjectExist;
+    return next()
+  }
+
+  if (destination_outlet_id === source_outlet_id) {
+    CatchHistory({ payload: JSON.stringify(req.body), api_response: "Sorry, source and destination cannot be the same", function_name: 'findOutlet', date_started: systemDate, sql_action: "SELECT", event: "found source and destination to be the same", actor: userData?.id }, req)
+    return sendResponse(res, 0, 200, 'Sorry, source and destination cannot be the same')
+  }
+
+  if (transfer_from === 'outlet') {
+    let results = await Finder(tableName, columnsToSelect, conditions)
+    let ObjectExist = results.rows[0]
+
+    let results2 = await Finder(tableName, columnsToSelect, conditions2)
+    let ObjectExist2 = results2.rows[0]
+
+    if (!ObjectExist && !ObjectExist2) {
+      CatchHistory({ payload: JSON.stringify(req.body), api_response: "Sorry, this outlet does not exist", function_name: 'findOutlet', date_started: systemDate, sql_action: "SELECT", event: "find outlet if it exist", actor: userData?.id }, req)
+      return sendResponse(res, 0, 200, 'Sorry, this outlet does not exist')
+    }
+    req.outlet = ObjectExist;
+    req.source_outlet = ObjectExist2;
+    return next()
+  }
+
+
+});
 exports.findTransfer = asynHandler(async (req, res, next) => {
   let userData = req.user;
   let tenant_id = userData?.tenant_id

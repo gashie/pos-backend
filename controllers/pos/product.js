@@ -30,6 +30,27 @@ exports.CreateProduct = asynHandler(async (req, res, next) => {
     }
 
 })
+exports.CreateProductAndTransfer = asynHandler(async (req, res, next) => {
+    //check if product exist for tenant
+    let payload = req.body;
+    let userData = req.user;
+    let pic = req?.files?.prod_pic;
+    var prodPicUploadLink = "./upload/images/products/";
+    let prod_pic = `${pic?.name}`
+    let tenant_id = userData?.tenant_id
+    payload.tenant_id = tenant_id
+    payload.prod_pic =  prod_pic
+    let results = await GlobalModel.Create(payload, 'product', 'product_id');
+    if (results.rowCount == 1) {
+        CatchHistory({ payload: JSON.stringify({ prod_name: payload.prod_name, serial: payload.serial }), api_response: `New product added`, function_name: 'CreateProduct', date_started: systemDate, sql_action: "INSERT", event: "Create Product", actor: userData.id }, req)
+        return sendResponse(res, 1, 200, "Record saved", results.rows[0])
+    } else {
+        CatchHistory({ payload: JSON.stringify({ prod_name: payload.prod_name, serial: payload.serial }), api_response: `Sorry, error saving record: contact administrator`, function_name: 'CreateProduct', date_started: systemDate, sql_action: "INSERT", event: "Create Product", actor: userData.id }, req)
+        return sendResponse(res, 0, 200, "Sorry, error saving record: contact administrator", [])
+
+    }
+
+})
 exports.ViewTenantProduct = asynHandler(async (req, res, next) => {
     let userData = req.user;
     let tenant_id = userData?.tenant_id

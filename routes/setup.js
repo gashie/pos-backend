@@ -10,7 +10,7 @@ const { tenantExist } = require('../middleware/tenant')
 
 //TENANT CONTROLLER
 const {
-   TenantSignup, ViewTenantUsers, UserSignup, UpdateUser, ResetInAppPassword
+   TenantSignup, ViewTenantUsers, UserSignup, UpdateUser, ResetInAppPassword, PasswordReset
 } = require("../controllers/pos/account");
 
 //TENANT AUTH CONTROLLER
@@ -46,6 +46,7 @@ const { CreateGroupBand, ViewGroupBand, UpdateGroupBand } = require("../controll
 const { AssignUserGroupBand, ViewUserAssignedGroupBands, UpdateAssignedGroupBand } = require("../controllers/pos/user_group_band");
 const { CreateSalaryAllowance, ViewSalaryAllowance, UpdateSalaryAllowance } = require("../controllers/pos/salary_allowance");
 const { CreateSalaryDeduction, ViewSalaryDeduction, UpdateSalaryDeduction } = require("../controllers/pos/salary_deduction");
+const { CreateSalaryBandAllowance, ViewSalaryBandAllowance, UpdateSalaryBandAllowance } = require("../controllers/pos/salary_band_allowance");
 
 
 //routes
@@ -53,7 +54,7 @@ router.route("/tenantsignup").post(accountExist, tenantExist, TenantSignup);
 router.route("/viewusers").post(protect,ViewTenantUsers);
 router.route("/createuser").post(protect,UserSignup);
 router.route("/updateuser").post(protect,UpdateUser);
-router.route("/resetinapppassword").post(protect,ResetInAppPassword);
+router.route("/resetinapppassword").post(protect,PasswordReset);
 
 
 
@@ -191,6 +192,12 @@ router.route("/update_allowance").post(protect,UpdateSalaryAllowance);
 router.route("/creatededuction").post(protect,CreateSalaryDeduction);
  router.route("/view_deduction").post(protect,ViewSalaryDeduction);
 router.route("/update_deduction").post(protect,UpdateSalaryDeduction);
+
+
+//manage salary band allowance
+router.route("/create_bandallowance").post(protect,CreateSalaryBandAllowance);
+ router.route("/view_bandallowance").post(protect,ViewSalaryBandAllowance);
+router.route("/update_bandallowance").post(protect,UpdateSalaryBandAllowance);
 
 
 //***PAYROLL**/
