@@ -49,6 +49,8 @@ exports.Auth = asynHandler(async (req, res) => {
         company: UserDbInfo.tenant_name,
         username: UserDbInfo.username,
         name: UserDbInfo.first_name + ' ' + UserDbInfo.last_name,
+        first_name:UserDbInfo.first_name,
+        last_name:UserDbInfo.last_name,
         email: UserDbInfo.email,
         role: UserDbInfo.role,
         default_outlet_id: findmyshop.rows[0].outlet_id,
