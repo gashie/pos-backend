@@ -52,6 +52,7 @@ exports.Auth = asynHandler(async (req, res) => {
         first_name:UserDbInfo.first_name,
         last_name:UserDbInfo.last_name,
         email: UserDbInfo.email,
+        phone:UserDbInfo.phone,
         role: UserDbInfo.role,
         default_outlet_id: findmyshop.rows[0].outlet_id,
         default_role: findmyshop.rows[0].role,
