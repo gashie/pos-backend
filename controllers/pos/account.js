@@ -130,11 +130,30 @@ exports.UpdateUser = asynHandler(async (req, res, next) => {
 
 exports.PasswordReset = asynHandler(async (req, res, next) => {
     let userData = req.user;
-    let {password,compare_password} = req.body;
+    let username = userData?.username
+    let {password,old_password,compare_password} = req.body;
 
     if (password !== compare_password) {
         return sendResponse(res, 0, 200, "Update failed, password doesnt match", [])
     }
+
+    const foundUser = await Model.auth(username)
+    let UserDbInfo = foundUser.rows[0]
+
+    if (!UserDbInfo) {
+        CatchHistory({ api_response: "Unauthorized access-username not in database", function_name: 'Auth', date_started: systemDate, sql_action: "SELECT", event: "User Authentication", actor: username }, req)
+        return sendResponse(res, 0, 401, 'Unauthorized access')
+
+    }
+
+    //check for password
+    const match = await bcyrpt.compare(old_password, UserDbInfo.password)
+
+    if (!match) {
+        CatchHistory({ api_response: "Unauthorized access-user exist but password does not match", function_name: 'Auth', date_started: systemDate, sql_action: "SELECT", event: "User Authentication", actor: username }, req)
+        return sendResponse(res, 0, 401, 'Unauthorized access')
+    }
+    cons
 
     const salt = await bcyrpt.genSalt(10);
     let payload = {
