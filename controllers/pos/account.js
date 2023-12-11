@@ -153,7 +153,7 @@ exports.PasswordReset = asynHandler(async (req, res, next) => {
         CatchHistory({ api_response: "Unauthorized access-user exist but password does not match", function_name: 'Auth', date_started: systemDate, sql_action: "SELECT", event: "User Authentication", actor: username }, req)
         return sendResponse(res, 0, 401, 'Unauthorized access')
     }
-    cons
+    
 
     const salt = await bcyrpt.genSalt(10);
     let payload = {
