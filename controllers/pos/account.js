@@ -130,20 +130,23 @@ exports.UpdateUser = asynHandler(async (req, res, next) => {
 
 exports.PasswordReset = asynHandler(async (req, res, next) => {
     let userData = req.user;
-    let {email,account_id} = req.body;
+    let {password,compare_password} = req.body;
+
+    if (password !== compare_password) {
+        return sendResponse(res, 0, 200, "Update failed, password doesnt match", [])
+    }
+
     const salt = await bcyrpt.genSalt(10);
-
-
     let payload = {
-        password: await bcyrpt.hash(req.body.password, salt),
+        password: await bcyrpt.hash(password, salt),
         updated_at: systemDate,
     }
 
 
-    const runupdate = await GlobalModel.Update(payload, 'account', 'account_id', account_id)
+    const runupdate = await GlobalModel.Update(payload, 'account', 'account_id', userData.id)
     if (runupdate.rowCount == 1) {
         CatchHistory({ api_response: `User with id :${userData.id} updated user password`, function_name: 'PasswordReset', date_started: systemDate, sql_action: "UPDATE", event: "Update User password", actor: userData.id }, req)
-        return sendResponse(res, 1, 200, "Record Updated",runupdate.rows[0])
+        return sendResponse(res, 1, 200, "Record Updated",[])
 
 
     } else {
