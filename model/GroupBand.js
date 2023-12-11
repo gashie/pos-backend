@@ -53,6 +53,60 @@ shopdb.FetchAssignedUserGroupBands = (tenant_id) => {
         });
     });
 };
+shopdb.FetchGroupBandAllowance = (tenant_id) => {
+    return new Promise((resolve, reject) => {
+        pool.query(`
+        SELECT
+        gba.*,
+        sa.salary_allowance_name,
+        gb.group_band_name,
+        gb.band_basic_salary,
+         CONCAT  (ac.first_name, ' ', ac.last_name) AS "employee"
+        
+        
+    FROM
+        group_band_allowance AS gba
+    LEFT JOIN group_band AS gb ON gba.group_band_id = gb.group_band_id
+    LEFT JOIN salary_allowance AS sa ON gba.salary_allowance_id = sa.salary_allowance_id
+    LEFT JOIN account AS ac ON gba.employee_id = ac.account_id
+				  WHERE gba.tenant_id  = $1
+        `, [tenant_id], (err, results) => {
+            if (err) {
+                logger.error(err);
+                return reject(err);
+            }
+
+            return resolve(results);
+        });
+    });
+};
+shopdb.FetchGroupBandDeduction = (tenant_id) => {
+    return new Promise((resolve, reject) => {
+        pool.query(`
+        SELECT
+        gbd.*,
+        sd.salary_deduction_name,
+        gb.group_band_name,
+        gb.band_basic_salary,
+         CONCAT  (ac.first_name, ' ', ac.last_name) AS "employee"
+        
+        
+    FROM
+        group_band_deduction AS gbd
+    LEFT JOIN group_band AS gb ON gbd.group_band_id = gb.group_band_id
+    LEFT JOIN salary_deduction AS sd ON gbd.salary_deduction_id = sd.salary_deduction_id
+    LEFT JOIN account AS ac ON gbd.employee_id = ac.account_id
+				  WHERE gbd.tenant_id  = $1
+        `, [tenant_id], (err, results) => {
+            if (err) {
+                logger.error(err);
+                return reject(err);
+            }
+
+            return resolve(results);
+        });
+    });
+};
 
 
 

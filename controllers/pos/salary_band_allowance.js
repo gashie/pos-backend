@@ -1,6 +1,7 @@
 const asynHandler = require("../../middleware/async");
 const { sendResponse, CatchHistory } = require("../../helper/utilfunc");
-const GlobalModel = require("../../model/Global")
+const GlobalModel = require("../../model/Global");
+const { FetchGroupBandAllowance } = require("../../model/GroupBand");
 const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 
 exports.CreateSalaryBandAllowance = asynHandler(async (req, res, next) => {
@@ -23,7 +24,7 @@ exports.CreateSalaryBandAllowance = asynHandler(async (req, res, next) => {
 exports.ViewSalaryBandAllowance = asynHandler(async (req, res, next) => {
     let userData = req.user;
     let tenant_id = userData?.tenant_id
-    let results = await GlobalModel.Find('tenant_id', tenant_id, 'group_band_allowance');
+    let results = await FetchGroupBandAllowance(tenant_id);
     if (results.rows.length == 0) {
         CatchHistory({ api_response: "No Record Found", function_name: 'ViewSalaryBandAllowance', date_started: systemDate, sql_action: "SELECT", event: "View salary band allowance records", actor: userData.id }, req)
         return sendResponse(res, 0, 200, "Sorry, No Record Found", [])
@@ -37,7 +38,7 @@ exports.UpdateSalaryBandAllowance = asynHandler(async (req, res, next) => {
     let userData = req.user;
     payload.updated_at = systemDate
 
-    const runupdate = await GlobalModel.Update(payload, 'group_band_allowance', 'group_band_allowance_id', payload.group_band_allowance_id)
+    const runupdate = await GlobalModel.Update(payload, 'group_band_allowance', 'band_allowance_id', payload.band_allowance_id)
     if (runupdate.rowCount == 1) {
         CatchHistory({ payload: JSON.stringify(req.body), api_response: `User with id :${userData.id} updated salary band allowance details`, function_name: 'UpdateSalaryBandAllowance', date_started: systemDate, sql_action: "UPDATE", event: "Update salary band allowance info", actor: userData.id }, req)
         return sendResponse(res, 1, 200, "Record Updated",runupdate.rows[0])

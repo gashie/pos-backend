@@ -47,6 +47,7 @@ const { AssignUserGroupBand, ViewUserAssignedGroupBands, UpdateAssignedGroupBand
 const { CreateSalaryAllowance, ViewSalaryAllowance, UpdateSalaryAllowance } = require("../controllers/pos/salary_allowance");
 const { CreateSalaryDeduction, ViewSalaryDeduction, UpdateSalaryDeduction } = require("../controllers/pos/salary_deduction");
 const { CreateSalaryBandAllowance, ViewSalaryBandAllowance, UpdateSalaryBandAllowance } = require("../controllers/pos/salary_band_allowance");
+const { CreateSalaryBandDeduction, ViewSalaryBandDeduction, UpdateSalaryBandDeduction } = require("../controllers/pos/salary_band_deduction");
 
 
 //routes
@@ -198,6 +199,12 @@ router.route("/update_deduction").post(protect,UpdateSalaryDeduction);
 router.route("/create_bandallowance").post(protect,CreateSalaryBandAllowance);
  router.route("/view_bandallowance").post(protect,ViewSalaryBandAllowance);
 router.route("/update_bandallowance").post(protect,UpdateSalaryBandAllowance);
+
+
+//manage salary band deduction
+router.route("/create_banddeduction").post(protect,CreateSalaryBandDeduction);
+ router.route("/view_banddeduction").post(protect,ViewSalaryBandDeduction);
+router.route("/update_banddeduction").post(protect,UpdateSalaryBandDeduction);
 
 
 //***PAYROLL**/
