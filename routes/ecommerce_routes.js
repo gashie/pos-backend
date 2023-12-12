@@ -39,10 +39,10 @@ router.route("/ecommerce/login").post(protectOutlet, EcommerceCustomerAuth);
 router.route("/ecommerce/update_profile").post(protectOutlet,protectCustomer, UpdateCustomerProfile);
 
 //category
-router.route("/ecommerce/categories").post(protectOutlet,protectCustomer, ViewEcommerceCategory);
+router.route("/ecommerce/categories").post( ViewEcommerceCategory);
 
 //products
-router.route("/ecommerce/items").post(protectOutlet,protectCustomer, ViewEcommerceProduct);
+router.route("/ecommerce/items").post( ViewEcommerceProduct);
 
 
 
