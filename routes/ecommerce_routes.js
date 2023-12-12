@@ -23,6 +23,8 @@ const {
 } = require("../controllers/ecommerce/auth");
 const { ViewEcommerceCategory } = require("../controllers/ecommerce/category");
 const { ViewEcommerceProduct } = require("../controllers/ecommerce/product");
+const { CreateShoppingCart, ViewShoppingCart, DeleteShoppingCart } = require("../controllers/ecommerce/cart");
+const { CreateShoppingWishList, ViewShoppingWishList, DeleteShoppingWishList } = require("../controllers/ecommerce/wishlist");
 
 //routes
 router.route("/ecommerce/signup").post(protectOutlet,EcommerceUserSignup);
@@ -39,10 +41,20 @@ router.route("/ecommerce/login").post(protectOutlet, EcommerceCustomerAuth);
 router.route("/ecommerce/update_profile").post(protectOutlet,protectCustomer, UpdateCustomerProfile);
 
 //category
-router.route("/ecommerce/categories").post( ViewEcommerceCategory);
+router.route("/ecommerce/categories").post(protectOutlet, ViewEcommerceCategory);
 
 //products
-router.route("/ecommerce/items").post( ViewEcommerceProduct);
+router.route("/ecommerce/items").post(protectOutlet, ViewEcommerceProduct);
+//carts
+router.route("/ecommerce/add_to_cart").post(protectOutlet,protectCustomer, CreateShoppingCart);
+router.route("/ecommerce/view_cart").post(protectOutlet,protectCustomer, ViewShoppingCart);
+router.route("/ecommerce/remove_from_cart").post(protectOutlet,protectCustomer, DeleteShoppingCart);
+
+//wishlist
+router.route("/ecommerce/add_to_wishlist").post(protectOutlet,protectCustomer, CreateShoppingWishList);
+router.route("/ecommerce/view_wishlist").post(protectOutlet,protectCustomer, ViewShoppingWishList);
+router.route("/ecommerce/remove_from_wishlist").post(protectOutlet,protectCustomer, DeleteShoppingWishList);
+
 
 
 
