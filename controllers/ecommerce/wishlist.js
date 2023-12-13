@@ -7,7 +7,7 @@ const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 exports.CreateShoppingWishList = asynHandler(async (req, res, next) => {
     //check if supplier exist for tenant
     let userData = req.user;
-    let tenant_id = userData?.tenant_id
+    let {tenant_id,outlet_id} = req?.client
     let payload = req.body;
     payload.tenant_id = tenant_id
     payload.whishlist_status = 'liked'
@@ -24,8 +24,8 @@ exports.CreateShoppingWishList = asynHandler(async (req, res, next) => {
 })
 exports.ViewShoppingWishList = asynHandler(async (req, res, next) => {
     let userData = req.user;
-    let tenant_id = userData?.tenant_id
-    let results = await ViewMyWishlist(userData?.id);
+    let {tenant_id,outlet_id} = req?.client
+    let results = await ViewMyWishlist(userData?.id,outlet_id,tenant_id);
     if (results.rows.length == 0) {
         CatchHistory({ api_response: "No item in wishlist", function_name: 'ViewShoppingWishList', date_started: systemDate, sql_action: "SELECT", event: "VIEW MY WISHLIST", actor: userData.id }, req)
         return sendResponse(res, 0, 200, "Sorry, No item in wishlist", [])

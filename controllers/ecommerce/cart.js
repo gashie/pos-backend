@@ -7,7 +7,7 @@ const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 exports.CreateShoppingCart = asynHandler(async (req, res, next) => {
     //check if supplier exist for tenant
     let userData = req.user;
-    let tenant_id = userData?.tenant_id
+    let {tenant_id,outlet_id} = req?.client
     let payload = req.body;
     payload.tenant_id = tenant_id
     payload.cart_status = 'loaded'
@@ -24,8 +24,8 @@ exports.CreateShoppingCart = asynHandler(async (req, res, next) => {
 })
 exports.ViewShoppingCart = asynHandler(async (req, res, next) => {
     let userData = req.user;
-    let tenant_id = userData?.tenant_id
-    let results = await ViewMyCart(userData?.id);
+    let {tenant_id,outlet_id} = req?.client
+    let results = await ViewMyCart(userData?.id,outlet_id,tenant_id);
     if (results.rows.length == 0) {
         CatchHistory({ api_response: "No item in cart", function_name: 'ViewShoppingCart', date_started: systemDate, sql_action: "SELECT", event: "VIEW MY CART", actor: userData.id }, req)
         return sendResponse(res, 0, 200, "Sorry, No item in cart", [])

@@ -16,19 +16,20 @@ shopdb.deleteItemFromWishList = (product_id,customer_id) => {
     });
 };
 
-shopdb.ViewMyWishlist = (customer_id) => {
+shopdb.ViewMyWishlist = (customer_id,outlet_id, tenant_id) => {
     return new Promise((resolve, reject) => {
         pool.query(`
         SELECT 
         p.prod_name,
         p.prod_price,
-        p.prod_qty,
+        oi.stock_quantity,
         wishlist.*
 FROM product p
 INNER JOIN wishlist wishlist ON p.product_id = wishlist.product_id
-WHERE wishlist.customer_id = $1 AND wishlist.wishlist_status = $2
+INNER JOIN outlet_inventory oi ON wishlist.product_id = oi.product_id
+WHERE wishlist.customer_id = $1 AND wishlist.wishlist_status = $2 AND oi.outlet_id = $3 AND p.tenant_id = $4
         
-        `, [customer_id,'status'], (err, results) => {
+        `, [customer_id,'liked',outlet_id, tenant_id], (err, results) => {
             if (err) {
                 logger.error(err);
                 return reject(err);
