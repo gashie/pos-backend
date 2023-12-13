@@ -30,13 +30,13 @@ exports.protectOutlet = asynHandler(async (req, res, next) => {
         let results = await Finder(tableName, columnsToSelect, conditions)
         let ObjectExist = results.rows[0]
         if (!ObjectExist) {
-            CatchHistory({ payload: JSON.stringify(req.body), api_response: `Failed to authenticate outlet,invalid client id or tenant`, function_name: 'verifyMainBeforeSwitch', date_started: systemDate, sql_action: "SELECT", event: "validate main shop before switching", actor: userData.id }, req)
+            CatchHistory({ payload: JSON.stringify(req.body), api_response: `Failed to authenticate outlet,invalid client id or tenant`, function_name: 'verifyMainBeforeSwitch', date_started: systemDate, sql_action: "SELECT", event: "validate main shop before switching", actor: '' }, req)
             return sendResponse(res, 0, 200, `Sorry, the system failed to verify this app`)
         }
 
         const match = await bcrypt.compare(client_keys, ObjectExist.api_key)
         if (!match) {
-        CatchHistory({ payload: JSON.stringify(req.body), api_response: `Failed to authenticate outlet,invalid client keys or apikeys`, function_name: 'verifyMainBeforeSwitch', date_started: systemDate, sql_action: "SELECT", event: "validate main shop before switching", actor: userData.id }, req)
+        CatchHistory({ payload: JSON.stringify(req.body), api_response: `Failed to authenticate outlet,invalid client keys or apikeys`, function_name: 'verifyMainBeforeSwitch', date_started: systemDate, sql_action: "SELECT", event: "validate main shop before switching", actor: '' }, req)
 
           return sendResponse(res, 0, 401, 'Sorry, the system failed to verify this app')
         }
