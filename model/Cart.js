@@ -21,6 +21,8 @@ shopdb.ViewMyCart = (customer_id) => {
         pool.query(`
         SELECT 
         p.prod_name,
+        p.prod_pic,
+        p.cat_id,
         p.prod_price,
         oi.stock_quantity,
         cart.*
