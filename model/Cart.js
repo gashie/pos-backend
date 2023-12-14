@@ -16,7 +16,7 @@ shopdb.deleteItemFromCart = (product_id,customer_id) => {
     });
 };
 
-shopdb.ViewMyCart = (customer_id,outlet_id, tenant_id) => {
+shopdb.ViewMyCart = (customer_id) => {
     return new Promise((resolve, reject) => {
         pool.query(`
         SELECT 
@@ -27,8 +27,8 @@ shopdb.ViewMyCart = (customer_id,outlet_id, tenant_id) => {
 FROM product p
 INNER JOIN shopping_cart cart ON p.product_id = cart.product_id
 INNER JOIN outlet_inventory oi ON cart.product_id = oi.product_id
-WHERE cart.customer_id = $1 AND cart.cart_status = $2 AND oi.outlet_id = $3 AND p.tenant_id = $4`,
-[customer_id,'loaded',outlet_id, tenant_id], (err, results) => {
+WHERE cart.customer_id = $1 AND cart.cart_status = $2`,
+[customer_id,'loaded'], (err, results) => {
             if (err) {
                 logger.error(err);
                 return reject(err);
