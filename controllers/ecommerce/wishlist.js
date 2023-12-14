@@ -10,6 +10,7 @@ exports.CreateShoppingWishList = asynHandler(async (req, res, next) => {
     let {tenant_id,outlet_id} = req?.client
     let payload = req.body;
     payload.tenant_id = tenant_id
+    payload.customer_id = userData?.customer_id
     payload.whishlist_status = 'liked'
     let results = await GlobalModel.Create(payload, 'wishlist','');
     if (results.rowCount == 1) {

@@ -10,6 +10,7 @@ exports.CreateShoppingCart = asynHandler(async (req, res, next) => {
     let {tenant_id,outlet_id} = req?.client
     let payload = req.body;
     payload.tenant_id = tenant_id
+    payload.customer_id = userData?.customer_id
     payload.cart_status = 'loaded'
     let results = await GlobalModel.Create(payload, 'shopping_cart','');
     if (results.rowCount == 1) {
@@ -38,7 +39,7 @@ exports.DeleteShoppingCart = asynHandler(async (req, res, next) => {
     let userData = req.user;
     let {product_id} = req.body
 
-    const runupdate = await deleteItemFromCart(product_id,userData?.id)
+    const runupdate = await deleteItemFromCart(product_id,userData?.customer_id)
     if (runupdate.rowCount == 1) {
         CatchHistory({ payload: JSON.stringify(req.body), api_response: `User with id :${userData.id} removed item with id ${product_id} from cart`, function_name: 'DeleteShoppingCart', date_started: systemDate, sql_action: "UPDATE", event: "REMOVE FROM CART", actor: userData.id }, req)
         return sendResponse(res, 1, 200, "Item removed from cart",runupdate.rows[0])
