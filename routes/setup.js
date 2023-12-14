@@ -48,6 +48,7 @@ const { CreateSalaryAllowance, ViewSalaryAllowance, UpdateSalaryAllowance } = re
 const { CreateSalaryDeduction, ViewSalaryDeduction, UpdateSalaryDeduction } = require("../controllers/pos/salary_deduction");
 const { CreateSalaryBandAllowance, ViewSalaryBandAllowance, UpdateSalaryBandAllowance } = require("../controllers/pos/salary_band_allowance");
 const { CreateSalaryBandDeduction, ViewSalaryBandDeduction, UpdateSalaryBandDeduction } = require("../controllers/pos/salary_band_deduction");
+const { CreateParentLocation, CreateSubLocation, ViewLocation, ViewSubLocation, UpdateLocation } = require("../controllers/pos/location");
 
 
 //routes
@@ -158,7 +159,13 @@ router.route("/viewereoderbyoutlet").post(protect,ViewReorderReportByOutlet);
 router.route("/viewprofitforoutlet").post(protect,ViewProfitPerOutlet);
 
 
-
+//locations
+router.route("/add_parent_location").post(protect,CreateParentLocation);
+router.route("/add_sub_location").post(protect,CreateSubLocation);
+router.route("/view_locations").post(protect,ViewLocation);
+router.route("/view_sub_locations").post(protect,ViewSubLocation);
+// router.route("/view_cascaded_locations").post(protect);
+router.route("/update_location").post(protect,UpdateLocation);
 
 //***PAYROLL**/
 
