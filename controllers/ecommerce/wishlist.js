@@ -11,7 +11,7 @@ exports.CreateShoppingWishList = asynHandler(async (req, res, next) => {
     let payload = req.body;
     payload.tenant_id = tenant_id
     payload.customer_id = userData?.customer_id
-    payload.whishlist_status = 'liked'
+    payload.wishlist_status = 'liked'
     let results = await GlobalModel.Create(payload, 'wishlist','');
     if (results.rowCount == 1) {
         CatchHistory({ api_response: `Customer with id ${userData?.id} added product with id ${payload.product_id} to  wishlist`, function_name: 'CreateShoppingWishList', date_started: systemDate, sql_action: "INSERT", event: "ADD TO WISHLIST", actor: userData.id }, req)
