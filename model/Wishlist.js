@@ -22,6 +22,8 @@ shopdb.ViewMyWishlist = (customer_id) => {
         SELECT 
         p.prod_name,
         p.prod_price,
+        p.prod_pic,
+        p.cat_id,
         oi.stock_quantity,
         wishlist.*
 FROM product p
