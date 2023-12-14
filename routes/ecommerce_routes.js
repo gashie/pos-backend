@@ -23,7 +23,7 @@ const {
 } = require("../controllers/ecommerce/auth");
 const { ViewEcommerceCategory } = require("../controllers/ecommerce/category");
 const { ViewEcommerceProduct } = require("../controllers/ecommerce/product");
-const { CreateShoppingCart, ViewShoppingCart, DeleteShoppingCart } = require("../controllers/ecommerce/cart");
+const { CreateShoppingCart, ViewShoppingCart, DeleteShoppingCart, UpdateCart } = require("../controllers/ecommerce/cart");
 const { CreateShoppingWishList, ViewShoppingWishList, DeleteShoppingWishList } = require("../controllers/ecommerce/wishlist");
 
 //routes
@@ -48,6 +48,7 @@ router.route("/ecommerce/items").post(protectOutlet, ViewEcommerceProduct);
 //carts
 router.route("/ecommerce/add_to_cart").post(protectOutlet,protectCustomer, CreateShoppingCart);
 router.route("/ecommerce/view_cart").post(protectOutlet,protectCustomer, ViewShoppingCart);
+router.route("/ecommerce/update_cart").post(protectOutlet,protectCustomer, UpdateCart);
 router.route("/ecommerce/remove_from_cart").post(protectOutlet,protectCustomer, DeleteShoppingCart);
 
 //wishlist
