@@ -55,7 +55,6 @@ exports.UpdateCart = asynHandler(async (req, res, next) => {
     let userData = req.user;
     let payload = {
         quantity:req.body.quantity,
-        updated_at : systemDate
     }
 
     const runupdate = await GlobalModel.Update(payload, 'shopping_cart', 'cart_id', req.body.cart_id)
