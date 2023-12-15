@@ -26,7 +26,7 @@ exports.CreateShoppingCart = asynHandler(async (req, res, next) => {
 exports.ViewShoppingCart = asynHandler(async (req, res, next) => {
     let userData = req.user;
     let {tenant_id,outlet_id} = req?.client
-    let results = await ViewMyCart(userData?.customer_id);
+    let results = await ViewMyCart(outlet_id,userData?.customer_id);
     if (results.rows.length == 0) {
         CatchHistory({ api_response: "No item in cart", function_name: 'ViewShoppingCart', date_started: systemDate, sql_action: "SELECT", event: "VIEW MY CART", actor: userData.customer_id }, req)
         return sendResponse(res, 0, 200, "Sorry, No item in cart", [])

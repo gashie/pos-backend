@@ -35,7 +35,7 @@ JOIN
 WHERE
     oi.outlet_id = $1
     AND w.customer_id = $2
-    AND wishlist.wishlist_status = $3
+    AND w.wishlist_status = $3
         
         `, [outlet_id,customer_id,'liked'], (err, results) => {
             if (err) {
