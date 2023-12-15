@@ -16,22 +16,28 @@ shopdb.deleteItemFromWishList = (product_id,customer_id) => {
     });
 };
 
-shopdb.ViewMyWishlist = (customer_id) => {
+shopdb.ViewMyWishlist = (outlet_id,customer_id) => {
     return new Promise((resolve, reject) => {
         pool.query(`
-        SELECT 
-        p.prod_name,
-        p.prod_price,
-        p.prod_pic,
-        p.cat_id,
-        oi.stock_quantity,
-        wishlist.*
-FROM product p
-INNER JOIN wishlist wishlist ON p.product_id = wishlist.product_id
-INNER JOIN outlet_inventory oi ON wishlist.product_id = oi.product_id
-WHERE wishlist.customer_id = $1 AND wishlist.wishlist_status = $2
+        SELECT
+    oi.product_id,
+    p.prod_name,
+    p.prod_price,
+    w.wishlist_id,  -- Add fields from the wishlist table
+    w.wishlist_status
+    -- Add other product and wishlist fields as needed
+FROM
+    outlet_inventory oi
+JOIN
+    product p ON oi.product_id = p.product_id
+JOIN
+    wishlist w ON p.product_id = w.product_id
+WHERE
+    oi.outlet_id = $1
+    AND w.customer_id = $2
+    AND wishlist.wishlist_status = $3
         
-        `, [customer_id,'liked'], (err, results) => {
+        `, [outlet_id,customer_id,'liked'], (err, results) => {
             if (err) {
                 logger.error(err);
                 return reject(err);

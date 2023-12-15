@@ -26,7 +26,7 @@ exports.CreateShoppingWishList = asynHandler(async (req, res, next) => {
 exports.ViewShoppingWishList = asynHandler(async (req, res, next) => {
     let userData = req.user;
     let {tenant_id,outlet_id} = req?.client
-    let results = await ViewMyWishlist(userData?.customer_id);
+    let results = await ViewMyWishlist(outlet_id,userData?.customer_id);
     if (results.rows.length == 0) {
         CatchHistory({ api_response: "No item in wishlist", function_name: 'ViewShoppingWishList', date_started: systemDate, sql_action: "SELECT", event: "VIEW MY WISHLIST", actor: userData.customer_id }, req)
         return sendResponse(res, 0, 200, "Sorry, No item in wishlist", [])
