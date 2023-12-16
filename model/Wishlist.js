@@ -23,9 +23,8 @@ shopdb.ViewMyWishlist = (outlet_id,customer_id) => {
     oi.product_id,
     p.prod_name,
     p.prod_price,
-    w.wishlist_id,  -- Add fields from the wishlist table
+    w.wishlist_id,
     w.wishlist_status
-    -- Add other product and wishlist fields as needed
 FROM
     outlet_inventory oi
 JOIN

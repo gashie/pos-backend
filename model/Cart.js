@@ -34,7 +34,7 @@ JOIN
     shopping_cart sc ON p.product_id = sc.product_id
 WHERE
     oi.outlet_id = $1
-    AND sc.customer_id = $2; 
+    AND sc.customer_id = $2
     AND sc.cart_status = $3`,
             [outlet_id,customer_id, 'loaded'], (err, results) => {
                 if (err) {
