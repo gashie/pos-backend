@@ -1,7 +1,6 @@
 const asynHandler = require("../../middleware/async");
 const { sendResponse, CatchHistory } = require("../../helper/utilfunc");
 const GlobalModel = require("../../model/Global");
-const { ViewSystemRoles } = require("../../model/Shipping");
 const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 
 exports.CreateSystemRole = asynHandler(async (req, res, next) => {
