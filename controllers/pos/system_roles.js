@@ -1,6 +1,7 @@
 const asynHandler = require("../../middleware/async");
 const { sendResponse, CatchHistory } = require("../../helper/utilfunc");
 const GlobalModel = require("../../model/Global");
+const { ShowUserRoles } = require("../../model/Account");
 const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 
 exports.CreateSystemRole = asynHandler(async (req, res, next) => {
@@ -20,6 +21,23 @@ exports.CreateSystemRole = asynHandler(async (req, res, next) => {
     }
 
 })
+exports.CreateUserRole = asynHandler(async (req, res, next) => {
+    //check if supplier exist for tenant
+    let userData = req.user;
+    let tenant_id = userData?.tenant_id
+    let payload = req.body;
+    payload.created_by = userData?.id
+    let results = await GlobalModel.Create(payload, 'user_roles','');
+    if (results.rowCount == 1) {
+        CatchHistory({ payload: JSON.stringify(payload), api_response: `New user role added`, function_name: 'CreateUserRole', date_started: systemDate, sql_action: "INSERT", event: "CREATE USER ROLE", actor: userData.id }, req)
+        return sendResponse(res, 1, 200, "Record saved", [])
+    } else {
+        CatchHistory({ payload: JSON.stringify(payload), api_response: `Sorry, error saving record: contact administrator`, function_name: 'CreateUserRole', date_started: systemDate, sql_action: "INSERT", event: "CREATE USER ROLE", actor: userData.id }, req)
+        return sendResponse(res, 0, 200, "Sorry, error saving record: contact administrator", [])
+
+    }
+
+})
 exports.ViewSystemRole = asynHandler(async (req, res, next) => {
     let userData = req.user;
   
@@ -33,6 +51,18 @@ exports.ViewSystemRole = asynHandler(async (req, res, next) => {
         return sendResponse(res, 0, 200, "Sorry, No Record Found", [])
     }
     CatchHistory({ api_response: `User with ${userData.id} viewed ${results.rows.length} system role record's`, function_name: 'ViewSystemRole', date_started: systemDate, sql_action: "SELECT", event: "VIEW SYSTEM ROLE", actor: userData.id }, req)
+
+    sendResponse(res, 1, 200, "Record Found", results.rows)
+})
+exports.ViewUserRole = asynHandler(async (req, res, next) => {
+    let userData = req.user;
+  
+    let results = await ShowUserRoles()
+    if (results.rows.length == 0) {
+        CatchHistory({ api_response: "No Record Found", function_name: 'ViewUserRole', date_started: systemDate, sql_action: "SELECT", event: "VIEW USER ROLE", actor: userData.id }, req)
+        return sendResponse(res, 0, 200, "Sorry, No Record Found", [])
+    }
+    CatchHistory({ api_response: `User with ${userData.id} viewed ${results.rows.length} system role record's`, function_name: 'ViewUserRole', date_started: systemDate, sql_action: "SELECT", event: "VIEW USER ROLE", actor: userData.id }, req)
 
     sendResponse(res, 1, 200, "Record Found", results.rows)
 })

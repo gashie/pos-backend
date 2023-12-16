@@ -51,6 +51,8 @@ const { CreateSalaryBandDeduction, ViewSalaryBandDeduction, UpdateSalaryBandDedu
 const { CreateParentLocation, CreateSubLocation, ViewLocation, ViewSubLocation, UpdateLocation, ViewCascadedLocation } = require("../controllers/pos/location");
 const { CreateShippingCarrier, ViewShippingCarrier, UpdateShippingCarrier } = require("../controllers/pos/shipping_carrier");
 const { CreatePickupPoint, ViewPickUpPoint, UpdatePickUpPoint } = require("../controllers/pos/pickup_points");
+const { CreateSystemRole, ViewSystemRole, UpdateSystemRole, CreateUserRole, ViewUserRole } = require("../controllers/pos/system_roles");
+const { CreateSystemPermission, ViewSystemPermission, UpdateSystemPermission, CreateRolePermission, ViewRolePermission } = require("../controllers/pos/system_permission");
 
 
 //routes
@@ -60,6 +62,23 @@ router.route("/createuser").post(protect,UserSignup);
 router.route("/updateuser").post(protect,UpdateUser);
 router.route("/resetinapppassword").post(protect,PasswordReset);
 
+///roles
+router.route("/create_role").post(protect,CreateSystemRole);
+router.route("/create_user_role").post(protect,CreateUserRole);
+router.route("/view_user_role").post(protect,ViewUserRole);
+router.route("/view_role").post(protect,ViewSystemRole);
+router.route("/update_role").post(protect,UpdateSystemRole);
+//permission
+router.route("/create_permission").post(protect,CreateSystemPermission);
+router.route("/create_role_permission").post(protect,CreateRolePermission);
+router.route("/view_role_permission").post(protect,ViewRolePermission);
+router.route("/view_permission").post(protect,ViewSystemPermission);
+router.route("/update_permission").post(protect,UpdateSystemPermission);
+
+///routes
+router.route("/create_route").post(protect,CreateSystemRole);
+router.route("/view_route").post(protect,CreateSystemRole);
+router.route("/update_route").post(protect,CreateSystemRole);
 
 
 //user login auth

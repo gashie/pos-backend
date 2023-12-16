@@ -1,6 +1,7 @@
 const asynHandler = require("../../middleware/async");
 const { sendResponse, CatchHistory } = require("../../helper/utilfunc");
 const GlobalModel = require("../../model/Global");
+const { ShowRolePermissions } = require("../../model/Account");
 const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 
 exports.CreateSystemPermission = asynHandler(async (req, res, next) => {
@@ -50,6 +51,18 @@ exports.ViewSystemPermission = asynHandler(async (req, res, next) => {
         return sendResponse(res, 0, 200, "Sorry, No Record Found", [])
     }
     CatchHistory({ api_response: `User with ${userData.id} viewed ${results.rows.length} system permission record's`, function_name: 'ViewSystemPermission', date_started: systemDate, sql_action: "SELECT", event: "VIEW SYSTEM PERMISSION", actor: userData.id }, req)
+
+    sendResponse(res, 1, 200, "Record Found", results.rows)
+})
+exports.ViewRolePermission = asynHandler(async (req, res, next) => {
+    let userData = req.user;
+
+    let results = await ShowRolePermissions()
+    if (results.rows.length == 0) {
+        CatchHistory({ api_response: "No Record Found", function_name: 'ViewRolePermission', date_started: systemDate, sql_action: "SELECT", event: "VIEW ROLE PERMISSION", actor: userData.id }, req)
+        return sendResponse(res, 0, 200, "Sorry, No Record Found", [])
+    }
+    CatchHistory({ api_response: `User with ${userData.id} viewed ${results.rows.length} system permission record's`, function_name: 'ViewRolePermission', date_started: systemDate, sql_action: "SELECT", event: "VIEW ROLE PERMISSION", actor: userData.id }, req)
 
     sendResponse(res, 1, 200, "Record Found", results.rows)
 })
