@@ -20,6 +20,23 @@ exports.CreateSystemPermission = asynHandler(async (req, res, next) => {
     }
 
 })
+exports.CreateRolePermission = asynHandler(async (req, res, next) => {
+    //check if supplier exist for tenant
+    let userData = req.user;
+    let tenant_id = userData?.tenant_id
+    let payload = req.body;
+    payload.created_by = userData?.id
+    let results = await GlobalModel.Create(payload, 'role_permissions','');
+    if (results.rowCount == 1) {
+        CatchHistory({ payload: JSON.stringify(payload), api_response: `New role permission added`, function_name: 'CreateRolePermission', date_started: systemDate, sql_action: "INSERT", event: "CREATE ROLE PERMISSION", actor: userData.id }, req)
+        return sendResponse(res, 1, 200, "Record saved", [])
+    } else {
+        CatchHistory({ payload: JSON.stringify(payload), api_response: `Sorry, error saving record: contact administrator`, function_name: 'CreateRolePermission', date_started: systemDate, sql_action: "INSERT", event: "CREATE ROLE PERMISSION", actor: userData.id }, req)
+        return sendResponse(res, 0, 200, "Sorry, error saving record: contact administrator", [])
+
+    }
+
+})
 exports.ViewSystemPermission = asynHandler(async (req, res, next) => {
     let userData = req.user;
   

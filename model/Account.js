@@ -89,4 +89,36 @@ shopdb.ShowTenantUsers = (tenant_id) => {
     });
 };
 
+shopdb.deleteItemFromRolePermission = (role_id, permission_id) => {
+    return new Promise((resolve, reject) => {
+        pool.query(`
+        DELETE FROM role_permissions 
+WHERE role_id = $1 AND permission_id = $2;
+
+        `, [role_id, permission_id], (err, results) => {
+            if (err) {
+                logger.error(err);
+                return reject(err);
+            }
+
+            return resolve(results);
+        });
+    });
+};
+shopdb.deleteItemFromUserRoles = (user_id, role_id) => {
+    return new Promise((resolve, reject) => {
+        pool.query(`
+        DELETE FROM user_roles 
+WHERE user_id = $1 AND role_id = $2;
+
+        `, [user_id, role_id], (err, results) => {
+            if (err) {
+                logger.error(err);
+                return reject(err);
+            }
+
+            return resolve(results);
+        });
+    });
+};
 module.exports = shopdb
