@@ -21,6 +21,7 @@ shopdb.ViewMyWishlist = (outlet_id,customer_id) => {
         pool.query(`
         SELECT
     oi.product_id,
+    p.prod_pic,
     p.prod_name,
     p.prod_price,
     w.wishlist_id,

@@ -23,6 +23,7 @@ shopdb.ViewMyCart = (outlet_id,customer_id) => {
     oi.product_id,
     p.prod_name,
     p.prod_price,
+    p.prod_pic,
 	sc.cart_id,
     sc.quantity, 
     sc.cart_status
