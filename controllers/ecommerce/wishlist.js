@@ -39,7 +39,7 @@ exports.DeleteShoppingWishList = asynHandler(async (req, res, next) => {
     let userData = req.user;
     let {product_id} = req.body
 
-    const runupdate = await deleteItemFromWishList(product_id,userData?.id)
+    const runupdate = await deleteItemFromWishList(product_id,userData?.customer_id)
     if (runupdate.rowCount == 1) {
         CatchHistory({ payload: JSON.stringify(req.body), api_response: `User with id :${userData.customer_id} removed item with id ${product_id} from wishlist`, function_name: 'DeleteShoppingWishList', date_started: systemDate, sql_action: "DELETE", event: "REMOVE FROM WISHLIST", actor: userData.customer_id }, req)
         return sendResponse(res, 1, 200, "Item removed from wishlist",runupdate.rows[0])
