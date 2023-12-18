@@ -1,6 +1,7 @@
 const asynHandler = require("../../middleware/async");
 const { sendResponse, CatchHistory } = require("../../helper/utilfunc");
-const GlobalModel = require("../../model/Global")
+const GlobalModel = require("../../model/Global");
+const { extractPayrollMonthYear } = require("../../helper/global");
 const systemDate = new Date().toISOString().slice(0, 19).replace("T", " ");
 
 exports.RunPayRoll = asynHandler(async (req, res, next) => {
@@ -9,6 +10,11 @@ exports.RunPayRoll = asynHandler(async (req, res, next) => {
     let tenant_id = userData?.tenant_id
     let payload = req.body;
     payload.tenant_id = tenant_id
+    let extractedDate = extractPayrollMonthYear(payload.run_period_start, payload.run_period_end)
+     payload.payroll_month = extractedDate.payroll_month
+     payload.payroll_year = extractedDate.payroll_year
+   
+  
     let results = await GlobalModel.Create(payload, 'payroll_runs','');
     if (results.rowCount == 1) {
         CatchHistory({ payload: JSON.stringify(payload), api_response: `Started a new payroll process`, function_name: 'RunPayRoll', date_started: systemDate, sql_action: "INSERT", event: "RUN PAYROLL", actor: userData.id }, req)

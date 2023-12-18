@@ -87,13 +87,8 @@ exports.ViewCascadedLocation = asynHandler(async (req, res, next) => {
     let tenant_id = userData?.tenant_id
     let {parent_location_id} = req.body
     let results = await ViewLocationCascaded(parent_location_id);
-    if (results.length == 0) {
-        CatchHistory({ api_response: "No Record Found", function_name: 'ViewCascadedLocation', date_started: systemDate, sql_action: "SELECT", event: "VIEW SHIPPING RATE", actor: userData.id }, req)
-        return sendResponse(res, 0, 200, "Sorry, No Record Found", [])
-    }
-    CatchHistory({ api_response: `User with ${userData.id} viewed ${results.rows.length} cascaded location`, function_name: 'ViewCascadedLocation', date_started: systemDate, sql_action: "SELECT", event: "VIEW SHIPPING RATE", actor: userData.id }, req)
 
-    sendResponse(res, 1, 200, "Record Found", results.rows)
+    sendResponse(res, 1, 200, "Record Found", results)
 })
 exports.UpdateLocation = asynHandler(async (req, res, next) => {
     let payload = req.body;
