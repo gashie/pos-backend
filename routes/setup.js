@@ -53,6 +53,7 @@ const { CreateShippingCarrier, ViewShippingCarrier, UpdateShippingCarrier } = re
 const { CreatePickupPoint, ViewPickUpPoint, UpdatePickUpPoint } = require("../controllers/pos/pickup_points");
 const { CreateSystemRole, ViewSystemRole, UpdateSystemRole, CreateUserRole, ViewUserRole } = require("../controllers/pos/system_roles");
 const { CreateSystemPermission, ViewSystemPermission, UpdateSystemPermission, CreateRolePermission, ViewRolePermission } = require("../controllers/pos/system_permission");
+const { RunPayRoll } = require("../controllers/pos/paryroll_run");
 
 
 //routes
@@ -252,6 +253,9 @@ router.route("/update_bandallowance").post(protect,UpdateSalaryBandAllowance);
 router.route("/create_banddeduction").post(protect,CreateSalaryBandDeduction);
  router.route("/view_banddeduction").post(protect,ViewSalaryBandDeduction);
 router.route("/update_banddeduction").post(protect,UpdateSalaryBandDeduction);
+
+//run payroll
+router.route("/start_payroll").post(protect,RunPayRoll);
 
 
 //***PAYROLL**/
