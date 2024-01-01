@@ -43,7 +43,7 @@ FROM
     });
 };
 
-shopdb.FindBySerial = (serial, tenant_id,outlet_id) => {
+shopdb.FindBySerial = (serial, tenant_id, outlet_id) => {
     return new Promise((resolve, reject) => {
         pool.query(`
         SELECT 
@@ -53,7 +53,7 @@ FROM product p
 INNER JOIN outlet_inventory oi ON p.product_id = oi.product_id
 WHERE p.serial = $1 AND oi.tenant_id = $2 AND oi.outlet_id = $3
         
-        `, [serial, tenant_id,outlet_id], (err, results) => {
+        `, [serial, tenant_id, outlet_id], (err, results) => {
             if (err) {
                 logger.error(err);
                 return reject(err);
@@ -75,7 +75,7 @@ shopdb.FindById = (product_id, tenant_id) => {
         });
     });
 };
-shopdb.FindOutletProductById = (product_id, tenant_id,outlet_id) => {
+shopdb.FindOutletProductById = (product_id, tenant_id, outlet_id) => {
     return new Promise((resolve, reject) => {
         pool.query(`
         SELECT 
@@ -84,7 +84,24 @@ shopdb.FindOutletProductById = (product_id, tenant_id,outlet_id) => {
 FROM product p
 INNER JOIN outlet_inventory oi ON p.product_id = oi.product_id
 WHERE oi.product_id = $1 AND oi.tenant_id = $2 AND oi.outlet_id = $3;
-        `, [product_id, tenant_id,outlet_id], (err, results) => {
+        `, [product_id, tenant_id, outlet_id], (err, results) => {
+            if (err) {
+                logger.error(err);
+                return reject(err);
+            }
+
+            return resolve(results);
+        });
+    });
+};
+shopdb.FindWareHouseProductById = (product_id, tenant_id) => {
+    return new Promise((resolve, reject) => {
+        pool.query(`
+        SELECT 
+        *
+FROM product
+WHERE product_id = $1 AND tenant_id = $2;
+        `, [product_id, tenant_id], (err, results) => {
             if (err) {
                 logger.error(err);
                 return reject(err);

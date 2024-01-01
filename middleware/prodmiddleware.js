@@ -1,3 +1,4 @@
+const uuidV4 = require('uuid');
 const asynHandler = require("./async");
 let path = require('path')
 const dotenv = require("dotenv");
@@ -7,7 +8,7 @@ const { sendResponse, CatchHistory } = require("../helper/utilfunc");
 
 exports.ProdPicVerify = asynHandler(async (req, res, next) => {
     let pic = req?.files?.prod_pic;
- 
+    let imageId = uuidV4.v4();
     let userData = req.user;
     let tenant_id = userData?.tenant_id
     let {serial,prod_name,net_image} = req.body
@@ -25,15 +26,15 @@ exports.ProdPicVerify = asynHandler(async (req, res, next) => {
       return sendResponse(res, 0, 401, 'Please upload an image file for the product')
     }
     if (!pic.mimetype.startsWith("image")) {
-     CatchHistory({ payload: JSON.stringify(serial,prod_name), api_response: `User with ${user_id} uploaded a file with no image extension for product`, function_name: 'ProdPicVerify', date_started: systemDate, sql_action: "SELECT", event: "Add new product", actor: user_id }, req)
+     CatchHistory({ api_response: `User with ${user_id} uploaded a file with no image extension for product`, function_name: 'ProdPicVerify', date_started: systemDate, sql_action: "SELECT", event: "Add new product", actor: user_id }, req)
      return sendResponse(res, 0, 401, 'Please upload an image file for the product')
     }
 
     //save images
     //change filename
 
-    pic.name = `${ProdPic}-${tenant_id}-serail-${serial.replace(/\s/g, '')}${path.parse(pic.name).ext}`;
-    console.log(`${ProdPic}-${tenant_id}-serial-${serial.replace(/\s/g, '')}${path.parse(pic.name).ext}`);
+    pic.name = `${ProdPic}-${tenant_id}-serail-${imageId}${path.parse(pic.name).ext}`;
+    console.log(`${ProdPic}-${tenant_id}-serial-${imageId}${path.parse(pic.name).ext}`);
     if (!fs.existsSync(`${prodPicUploadLink}${pic.name}`)) {
       console.log('file does not exist, saving product...');
       pic.mv(`${prodPicUploadLink}${pic.name}`, async (err) => {
@@ -51,6 +52,7 @@ exports.ProdPicVerify = asynHandler(async (req, res, next) => {
 
   exports.UpdateProdPicVerify = asynHandler(async (req, res, next) => {
     let pic = req?.files?.prod_pic;
+    let imageId = uuidV4.v4();
     let {net_image} = req.body
     if (net_image.length > 0 ) {
       return   next()
@@ -76,8 +78,8 @@ exports.ProdPicVerify = asynHandler(async (req, res, next) => {
     //save images
     //change filename
 
-    pic.name = `${ProdPic}-${tenant_id}-serail-${serial.replace(/\s/g, '')}${path.parse(pic.name).ext}`;
-    console.log(`${ProdPic}-${tenant_id}-serial-${serial.replace(/\s/g, '')}${path.parse(pic.name).ext}`);
+    pic.name = `${ProdPic}-${tenant_id}-serail-${imageId}${path.parse(pic.name).ext}`;
+    console.log(`${ProdPic}-${tenant_id}-serial-${imageId}${path.parse(pic.name).ext}`);
     if (!fs.existsSync(`${prodPicUploadLink}${pic.name}`)) {
       console.log('file does not exist, saving product...');
       pic.mv(`${prodPicUploadLink}${pic.name}`, async (err) => {

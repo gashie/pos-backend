@@ -80,8 +80,8 @@ async function fetchEmployeeDetails() {
   }
   
   // Function to check if payroll can be executed for the given period
-  async function canExecutePayroll(runType, month, year) {
-    const res = await pool.query('SELECT * FROM public.payroll_runs WHERE payroll_month = $1 AND payroll_year = $2 AND run_type = $3 AND status = \'completed\'', [month, year, runType]);
+  async function canExecutePayroll(run_purpose, month, year) {
+    const res = await pool.query('SELECT * FROM public.payroll_runs WHERE payroll_month = $1 AND payroll_year = $2 AND run_purpose = $3 AND status = \'completed\'', [month, year, run_purpose]);
     return res.rows.length === 0;
   }
   
@@ -89,25 +89,30 @@ async function fetchEmployeeDetails() {
 // Main function to execute the payroll process
 async function executePayroll() {
     try {
-      const runType = 'Regular'; // Could be 'Bonus', 'Adjustment', etc.
+      const run_purpose = 'Regular'; // Could be 'Bonus', 'Adjustment', etc.
       const payrollMonth = 9/* current month */;
       const payrollYear = 2023 /* current year */;
       const payrollRunId = '58b81c59-c8f4-449a-99ab-2162da100200'/* logic to determine the current payroll run ID */;
   
-      if (await canExecutePayroll(runType, payrollMonth, payrollYear)) {
+      if (await canExecutePayroll(run_purpose, payrollMonth, payrollYear)) {
         const employees = await fetchEmployeeDetails();
         for (const employee of employees) {
           const band = await fetchBandForEmployee(employee.account_id); // Using account_id as employee_id
-          const allowances = await fetchAllowancesForEmployee(employee.account_id);
-          const deductions = await fetchDeductionsForEmployee(employee.account_id);
-  
-          const payrollResult = calculateNetPay(employee, band, allowances, deductions);
-          await insertPayrollResults(employee.account_id, payrollResult.netPay, payrollResult.totalTax, payrollRunId,payrollMonth,payrollYear);
-          // ... [Insert additional details into other tables]
+          if (band) {
+            const allowances = await fetchAllowancesForEmployee(employee.account_id);
+            console.log('====================================');
+            console.log(allowances);
+            console.log('====================================');
+            const deductions = await fetchDeductionsForEmployee(employee.account_id);
+    
+            const payrollResult = calculateNetPay(employee, band, allowances, deductions);
+            await insertPayrollResults(employee.account_id, payrollResult.netPay, payrollResult.totalTax, payrollRunId,payrollMonth,payrollYear);
+            // ... [Insert additional details into other tables]
+          }
         }
-        console.log(`Payroll calculation completed for ${runType}.`);
+        console.log(`Payroll calculation completed for ${run_purpose}.`);
       } else {
-        console.log(`Payroll already completed for ${runType} in ${payrollMonth}/${payrollYear}. Skipping execution.`);
+        console.log(`Payroll already completed for ${run_purpose} in ${payrollMonth}/${payrollYear}. Skipping execution.`);
       }
     } catch (err) {
       console.error('Error executing payroll:', err);

@@ -99,7 +99,7 @@ exports.FindTenantProduct = asynHandler(async (req, res, next) => {
     let default_outlet_id = userData?.default_outlet_id
 
     let { id } = req.body
-    let results = await ProductModel.FindOutletProductById(id, tenant_id,default_outlet_id);
+    let results = await ProductModel.FindWareHouseProductById(id, tenant_id);
     if (results.rows.length == 0) {
         CatchHistory({ api_response: "No Record Found", function_name: 'FindTenantProduct', date_started: systemDate, sql_action: "SELECT", event: "Product Search By Id", actor: userData.id }, req)
         return sendResponse(res, 0, 200, "Sorry, No Record Found", [])
