@@ -124,7 +124,7 @@ router.route("/viewcustomer").post(protect, ViewTenantCustomers);
 router.route("/updatecustomer").post(protect, UpdateCustomer);
 
 //product
-router.route("/addproduct").post(protect,productExist,ProdPicVerify, CreateProduct);
+router.route("/addproduct").post(protect,ProdPicVerify, CreateProduct);
 router.route("/viewproduct").post(protect, ViewTenantProduct);
 router.route("/viewoutletproduct").post(protect, ViewTenantOutletProduct);
 router.route("/updateproduct").post(protect,findProduct,UpdateProdPicVerify, UpdateProduct);
