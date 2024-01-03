@@ -112,9 +112,8 @@ exports.UpdateProduct = asynHandler(async (req, res, next) => {
     let payload = req.body;
     let userData = req.user;
     let pic = req?.files?.prod_pic;
-    var prodPicUploadLink = "./Upload/";
-    let prod_pic = `${prodPicUploadLink}${pic?.name}`
-    payload.prod_pic =  payload.net_image.length > 0 ? null: prod_pic
+    var prodPicUploadLink = "./upload/images/products/";
+    let prod_pic = `${pic?.name}`
     payload.updated_at = systemDate
     let ExistingProduct = req.product
     if (pic) {

@@ -53,10 +53,10 @@ exports.ProdPicVerify = asynHandler(async (req, res, next) => {
   exports.UpdateProdPicVerify = asynHandler(async (req, res, next) => {
     let pic = req?.files?.prod_pic;
     let imageId = uuidV4.v4();
-    let {net_image} = req.body
-    if (net_image.length > 0 ) {
-      return   next()
-    }
+    // let {net_image} = req.body
+    // if (net_image.length > 0 ) {
+    //   return   next()
+    // }
    if (pic) {
     console.log('im doing something here');
     let userData = req.user;
@@ -71,7 +71,7 @@ exports.ProdPicVerify = asynHandler(async (req, res, next) => {
     fs = require('fs');
     //check files for
     if (!pic.mimetype.startsWith("image")) {
-     CatchHistory({ payload: JSON.stringify(serial,prod_name), api_response: `User with ${user_id} uploaded a file with no image extension for product`, function_name: 'ProdPicVerify', date_started: systemDate, sql_action: "SELECT", event: "Add new product", actor: user_id }, req)
+     CatchHistory({api_response: `User with ${user_id} uploaded a file with no image extension for product`, function_name: 'ProdPicVerify', date_started: systemDate, sql_action: "SELECT", event: "Add new product", actor: user_id }, req)
      return sendResponse(res, 0, 401, 'Please upload an image file for the product')
     }
 
