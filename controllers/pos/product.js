@@ -124,7 +124,13 @@ exports.UpdateProduct = asynHandler(async (req, res, next) => {
        delete payload.prod_pic
     }
 if (payload.prod_qty) {
-    payload.prod_qty = Number(ExistingProduct.prod_qty) + Number(payload.prod_qty)
+   
+    if (payload.prod_qty > ExistingProduct.prod_qty  ) {
+        payload.prod_qty = Number(ExistingProduct.prod_qty) + Number(payload.prod_qty)
+    }
+    if (payload.prod_qty < ExistingProduct.prod_qty  ) {
+        payload.prod_qty =  Number(payload.prod_qty)
+    }
 }
     const runupdate = await GlobalModel.Update(payload, 'product', 'product_id', payload.product_id)
     if (runupdate.rowCount == 1) {
