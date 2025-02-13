@@ -13,10 +13,19 @@ exports.CreateProduct = asynHandler(async (req, res, next) => {
     let userData = req.user;
     let pic = req?.files?.prod_pic;
     var prodPicUploadLink = "./upload/images/products/";
-    let prod_pic = `${pic?.name}`
-    let tenant_id = userData?.tenant_id
-    payload.tenant_id = tenant_id
-    payload.prod_pic =  prod_pic
+    let tenant_id = userData?.tenant_id;
+    
+    // Set tenant_id in the payload
+    payload.tenant_id = tenant_id;
+    
+    // Check if the file exists
+    if (!pic) {
+        // If no file is uploaded, set a default prod_pic using tenant_id and serial placeholders
+        payload.prod_pic = `tenant-${tenant_id}-serial-0da81dcd-b3de-4113-85eb-33bcdbc2bdae.jpg`;
+    } else {
+        // The pic name is already set and modified by the middleware
+        payload.prod_pic = pic.name;  // Since the name is modified in the middleware
+    }
 
     console.log(payload);
     let results = await GlobalModel.Create(payload, 'product', 'product_id');
@@ -39,7 +48,7 @@ exports.CreateProductAndTransfer = asynHandler(async (req, res, next) => {
     let prod_pic = `${pic?.name}`
     let tenant_id = userData?.tenant_id
     payload.tenant_id = tenant_id
-    payload.prod_pic =  prod_pic
+    payload.prod_pic = prod_pic
     let results = await GlobalModel.Create(payload, 'product', 'product_id');
     if (results.rowCount == 1) {
         CatchHistory({ payload: JSON.stringify({ prod_name: payload.prod_name, serial: payload.serial }), api_response: `New product added`, function_name: 'CreateProduct', date_started: systemDate, sql_action: "INSERT", event: "Create Product", actor: userData.id }, req)
@@ -67,7 +76,7 @@ exports.ViewTenantOutletProduct = asynHandler(async (req, res, next) => {
     let userData = req.user;
     let tenant_id = userData?.tenant_id
     let default_outlet_id = userData?.default_outlet_id
-    let results = await ProductModel.FindOutletProductByOutletId(default_outlet_id,tenant_id);
+    let results = await ProductModel.FindOnlyOutletProductByOutletId(default_outlet_id, tenant_id);
     if (results.rows.length == 0) {
         CatchHistory({ api_response: "No Record Found", function_name: 'ViewTenantOutletProduct', date_started: systemDate, sql_action: "SELECT", event: `Viewing ${results.rows.length} product's from ${userData?.company}`, actor: userData.id }, req)
         return sendResponse(res, 0, 200, "Sorry, No Record Found", [])
@@ -82,7 +91,7 @@ exports.SearchTenantProduct = asynHandler(async (req, res, next) => {
     let default_outlet_id = userData?.default_outlet_id
 
     let { serial } = req.body
-    let results = await ProductModel.FindBySerial(serial, tenant_id,default_outlet_id);
+    let results = await ProductModel.FindBySerial(serial, tenant_id, default_outlet_id);
 
     if (results.rows.length == 0) {
         CatchHistory({ api_response: "No Record Found", function_name: 'SearchTenantProduct', date_started: systemDate, sql_action: "SELECT", event: "Product Search By Serial", actor: userData.id }, req)
@@ -90,7 +99,7 @@ exports.SearchTenantProduct = asynHandler(async (req, res, next) => {
     }
     CatchHistory({ api_response: `User with ${userData.id} searched for ${serial}`, function_name: 'SearchTenantProduct', date_started: systemDate, sql_action: "SELECT", event: "Product Search By Serial", actor: userData.id }, req)
 
-    sendResponse(res, 1, 200, "Record Found", {item:results.rows[0]})
+    sendResponse(res, 1, 200, "Record Found", { item: results.rows[0] })
 })
 
 exports.FindTenantProduct = asynHandler(async (req, res, next) => {
@@ -120,17 +129,17 @@ exports.UpdateProduct = asynHandler(async (req, res, next) => {
         console.log('theres pic');
         payload.prod_pic = prod_pic
 
-    }else{
-       delete payload.prod_pic
+    } else {
+        delete payload.prod_pic
     }
-if (payload.prod_qty) {
-   
-    payload.prod_qty =  Number(payload.prod_qty)
-}
+    if (payload.prod_qty) {
+
+        payload.prod_qty = Number(payload.prod_qty)
+    }
     const runupdate = await GlobalModel.Update(payload, 'product', 'product_id', payload.product_id)
     if (runupdate.rowCount == 1) {
         CatchHistory({ payload: JSON.stringify(req.body), api_response: `User with id :${userData.id} updated product details}`, function_name: 'UpdateProduct', date_started: systemDate, sql_action: "UPDATE", event: "Update Prodcut", actor: userData.id }, req)
-        return sendResponse(res, 1, 200, "Record Updated",runupdate.rows[0])
+        return sendResponse(res, 1, 200, "Record Updated", runupdate.rows[0])
 
 
     } else {

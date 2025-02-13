@@ -130,6 +130,25 @@ WHERE oi.outlet_id = $1 AND p.tenant_id = $2;
         });
     });
 };
+shopdb.FindOnlyOutletProductByOutletId = (outlet_id, tenant_id) => {
+    return new Promise((resolve, reject) => {
+        pool.query(`
+        SELECT 
+        p.*,
+        oi.stock_quantity
+FROM product p
+INNER JOIN outlet_inventory oi ON p.product_id = oi.product_id
+WHERE oi.outlet_id = $1 AND p.tenant_id = $2 AND oi.stock_quantity > 0;
+        `, [outlet_id, tenant_id], (err, results) => {
+            if (err) {
+                logger.error(err);
+                return reject(err);
+            }
+
+            return resolve(results);
+        });
+    });
+};
 shopdb.FindItemsToPick = (transfer_id) => {
     return new Promise((resolve, reject) => {
         pool.query(`
